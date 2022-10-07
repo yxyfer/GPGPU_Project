@@ -5,7 +5,7 @@
 
 #include <CLI/CLI.hpp>
 #include <spdlog/spdlog.h>
-#include "render.hpp"
+#include "detect.hpp"
 
 
 void write_png(const std::byte* buffer,
@@ -82,11 +82,11 @@ int main(int argc, char** argv)
   spdlog::info("Runnging {} mode with (w={},h={},niter={}).", mode, width, height, niter);
   if (mode == "CPU")
   {
-    render_cpu(reinterpret_cast<char*>(buffer.get()), width, height, stride, niter);
+    detect_cpu(reinterpret_cast<char*>(buffer.get()), reinterpret_cast<char*>(buffer.get()), width, height, stride);
   }
   else if (mode == "GPU")
   {
-    render(reinterpret_cast<char*>(buffer.get()), width, height, stride, niter);
+    detect_gpu(reinterpret_cast<char*>(buffer.get()), reinterpret_cast<char*>(buffer.get()), width, height, stride);
   }
 
   // Save

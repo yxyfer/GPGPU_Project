@@ -1,4 +1,4 @@
-#include "render.hpp"
+#include "detect.hpp"
 #include <vector>
 #include <benchmark/benchmark.h>
 
@@ -13,7 +13,7 @@ void BM_Rendering_cpu(benchmark::State& st)
   std::vector<char> data(height * stride);
 
   for (auto _ : st)
-    render_cpu(data.data(), width, height, stride, niteration);
+    detect_cpu(data.data(), data.data(), width, height, stride);
 
   st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
@@ -24,7 +24,7 @@ void BM_Rendering_gpu(benchmark::State& st)
   std::vector<char> data(height * stride);
 
   for (auto _ : st)
-    render(data.data(), width, height, stride, niteration);
+    detect_gpu(data.data(), data.data(), width, height, stride);
 
   st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
