@@ -21,26 +21,25 @@
 // Usage: ./mandel
 int main(int argc, char** argv)
 {
-  (void) argc;
-  (void) argv;
+    (void) argc;
+    (void) argv;
 
-  /* std::string filename = "output.png"; */
-  std::string mode = "CPU";
+    std::string mode = "CPU";
 
-  /* CLI::App app{"mandel"}; */
-  /* app.add_set("-m", mode, {"GPU", "CPU"}, "Either 'GPU' or 'CPU'"); */
-  /* app.add_option("-o", filename, "Output image"); */
-  /* app.add_option("width", width, "width of the output image"); */
-  /* app.add_option("height", height, "height of the output image"); */
-  /* CLI11_PARSE(app, argc, argv); */
+    if (argc < 3) {
+        std::cout << "Minimum two images are needed\n";
+        return 1;
+    }
 
-  for (int i = 1; i < argc; i++)
-      std::cout << argv[i] << " | ";
+    int width, height, channels;
+    unsigned char *ref_image = stbi_load(argv[1], &width, &height, &channels, 0);
+    unsigned char *obj_image = stbi_load(argv[1], &width, &height, &channels, 0);
 
-  int width, height, channels;
-  unsigned char *img = stbi_load(argv[1], &width, &height, &channels, 0);
+    std::cout << "Reference image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
+    std::cout << "Object image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
 
-  std::cout << width << " - " << height << " - " << channels;
+    stbi_image_free(ref_image);
+    stbi_image_free(obj_image);
 
   // Create buffer
   /* constexpr int kRGBASize = 4; */
