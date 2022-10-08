@@ -1,55 +1,21 @@
 #include <cstddef>
 #include <memory>
-
-#include <png.h>
+#include <iostream>
 
 #include <CLI/CLI.hpp>
 #include <spdlog/spdlog.h>
+
 #include "detect.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-void write_png(const std::byte* buffer,
-               int width,
-               int height,
-               int stride,
-               const char* filename)
-{
-  png_structp png_ptr =
-    png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+/* #define STB_IMAGE_WRITE_IMPLEMENTATION */
+/* #include "stb_image_write.h" */
 
-  if (!png_ptr)
-    return;
-
-  png_infop info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr)
-  {
-    png_destroy_write_struct(&png_ptr, nullptr);
-    return;
-  }
-
-  FILE* fp = fopen(filename, "wb");
-  png_init_io(png_ptr, fp);
-
-  png_set_IHDR(png_ptr, info_ptr,
-               width,
-               height,
-               8,
-               PNG_COLOR_TYPE_RGB_ALPHA,
-               PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_DEFAULT,
-               PNG_FILTER_TYPE_DEFAULT);
-
-  png_write_info(png_ptr, info_ptr);
-  for (int i = 0; i < height; ++i)
-  {
-    png_write_row(png_ptr, reinterpret_cast<png_const_bytep>(buffer));
-    buffer += stride;
-  }
-
-  png_write_end(png_ptr, info_ptr);
-  png_destroy_write_struct(&png_ptr, nullptr);
-  fclose(fp);
-}
+/* stbi_write_png("sky.png", width, height, channels, img, width * channels); */
+/* stbi_write_jpg("sky2.jpg", width, height, channels, img, 100); */
+/* stbi_image_free(img); */
 
 
 // Usage: ./mandel
@@ -58,39 +24,45 @@ int main(int argc, char** argv)
   (void) argc;
   (void) argv;
 
-  std::string filename = "output.png";
-  std::string mode = "GPU";
-  int width = 4800;
-  int height = 3200;
-  int niter = 100;
+  /* std::string filename = "output.png"; */
+  std::string mode = "CPU";
 
-  CLI::App app{"mandel"};
-  app.add_option("-o", filename, "Output image");
-  app.add_option("niter", niter, "number of iteration");
-  app.add_option("width", width, "width of the output image");
-  app.add_option("height", height, "height of the output image");
-  app.add_set("-m", mode, {"GPU", "CPU"}, "Either 'GPU' or 'CPU'");
+  /* CLI::App app{"mandel"}; */
+  /* app.add_set("-m", mode, {"GPU", "CPU"}, "Either 'GPU' or 'CPU'"); */
+  /* app.add_option("-o", filename, "Output image"); */
+  /* app.add_option("width", width, "width of the output image"); */
+  /* app.add_option("height", height, "height of the output image"); */
+  /* CLI11_PARSE(app, argc, argv); */
 
-  CLI11_PARSE(app, argc, argv);
+  for (int i = 1; i < argc; i++)
+      std::cout << argv[i] << " | ";
+
+  int width, height, channels;
+  unsigned char *img = stbi_load(argv[1], &width, &height, &channels, 0);
+
+  std::cout << width << " - " << height << " - " << channels;
 
   // Create buffer
-  constexpr int kRGBASize = 4;
-  int stride = width * kRGBASize;
-  auto buffer = std::make_unique<std::byte[]>(height * stride);
+  /* constexpr int kRGBASize = 4; */
+  /* int stride = width * kRGBASize; */
+  /* auto buffer = std::make_unique<std::byte[]>(height * stride); */
 
   // Rendering
-  spdlog::info("Runnging {} mode with (w={},h={},niter={}).", mode, width, height, niter);
-  if (mode == "CPU")
-  {
-    detect_cpu(reinterpret_cast<char*>(buffer.get()), reinterpret_cast<char*>(buffer.get()), width, height, stride);
-  }
-  else if (mode == "GPU")
-  {
-    detect_gpu(reinterpret_cast<char*>(buffer.get()), reinterpret_cast<char*>(buffer.get()), width, height, stride);
-  }
+  /* spdlog::info("Runnging {} mode with (w={},h={},niter={}).", mode, width, height, niter); */
+  /* spdlog::info("Runnging {} mode with.", mode); */
+  /* if (mode == "CPU") */
+  /* { */
+  /*   detect_cpu(reinterpret_cast<char*>(buffer.get()), */
+  /*           reinterpret_cast<char*>(buffer.get()), */
+  /*           width, height, stride); */
+  /* } */
+  /* else if (mode == "GPU") */
+  /* { */
+  /*   detect_gpu(reinterpret_cast<char*>(buffer.get()), reinterpret_cast<char*>(buffer.get()), width, height, stride); */
+  /* } */
 
   // Save
-  write_png(buffer.get(), width, height, stride, filename.c_str());
-  spdlog::info("Output saved in {}.", filename);
+  /* write_png(buffer.get(), width, height, stride, filename.c_str()); */
+  /* spdlog::info("Output saved in {}.", filename); */
 }
 
