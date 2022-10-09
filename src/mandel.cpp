@@ -17,6 +17,18 @@
 /* stbi_write_jpg("sky2.jpg", width, height, channels, img, 100); */
 /* stbi_image_free(img); */
 
+// width = col
+// height = row
+
+void save_matrix(unsigned char **buffer, int width, int height) {
+    unsigned char *sa = (unsigned char *) std::malloc(width * height * sizeof(unsigned char));
+
+    for (int i = 0; i < height; i++)
+        for (int j = 0; j < width; j++)
+            sa[i * width + j] = buffer[i][j];
+
+    stbi_write_jpg("../images/gray_scale.jpg", width, height, 1, sa, 100);
+}
 
 // Usage: ./mandel
 int main(int argc, char** argv)
@@ -38,10 +50,11 @@ int main(int argc, char** argv)
     std::cout << "Reference image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
     std::cout << "Object image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
 
-    unsigned char *gray_ref = to_gray_scale(ref_image, width, height, channels);
-    stbi_write_jpg("gray_scale.jpg", width, height, 1, gray_ref, 100);
+    unsigned char **gray_ref = to_gray_scale(ref_image, width, height, channels);
 
-    free(gray_ref);
+    save_matrix(gray_ref, width, height);
+
+    // TODO Free gray_ref
     stbi_image_free(ref_image);
     stbi_image_free(obj_image);
 }

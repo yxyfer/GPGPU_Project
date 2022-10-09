@@ -1,6 +1,7 @@
 #include "detect.hpp"
 #include <spdlog/spdlog.h>
 #include <cassert>
+#include <iostream>
 
 [[gnu::noinline]]
 void _abortError(const char* msg, const char* fname, int line)
@@ -15,13 +16,17 @@ void _abortError(const char* msg, const char* fname, int line)
 
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
-unsigned char *to_gray_scale(unsigned char* buffer, int width, int height, int channels) {
-    unsigned char *gray_scale = (unsigned char*)std::malloc(width * height * sizeof(unsigned char));
-
-    int i = 0;
-    int j = 0;
-    for (;i < width * height * channels - channels; i += channels, j++) {
-        gray_scale[j] = 0.3 * buffer[i] + 0.59 * buffer[i + 1] + 0.11 * buffer[i + 2];
+unsigned char **to_gray_scale(unsigned char* buffer, int width, int height, int channels) {
+    unsigned char **gray_scale = (unsigned char **) malloc(height * sizeof(unsigned char *));
+    for(int i = 0; i < height; i++)
+        gray_scale[i] = (unsigned char *) malloc(width * sizeof(unsigned char));
+    
+    for (int r = 0; r < height; r++) {
+        for (int c = 0; c < width; c++) {
+            gray_scale[r][c] = (0.30 * buffer[(r * width + c) * 3] +       // R
+                                0.59 * buffer[(r * width + c) * 3 + 1] +   // G
+                                0.11 * buffer[(r * width + c) * 3 + 2]);   // B
+        }
     }
 
     return gray_scale;

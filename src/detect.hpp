@@ -17,7 +17,7 @@ void detect_cpu(unsigned char* buffer_start, unsigned char *buffer_obj, int widt
 /// \param width Image width
 /// \param height Image height
 /// \param channels Image number of channels
-unsigned char *to_gray_scale(unsigned char* buffer, int width, int height, int channels);
+unsigned char **to_gray_scale(unsigned char* buffer, int width, int height, int channels);
 
 
 /// \param buffer_start The RGBA24 image buffer
