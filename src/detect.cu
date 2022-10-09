@@ -16,7 +16,7 @@ void _abortError(const char* msg, const char* fname, int line)
 
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
-unsigned char **to_gray_scale(unsigned char* buffer, int width, int height, int channels) {
+unsigned char **to_gray_scale(unsigned char *buffer, int width, int height, int channels) {
     unsigned char **gray_scale = (unsigned char **) malloc(height * sizeof(unsigned char *));
     for(int i = 0; i < height; i++)
         gray_scale[i] = (unsigned char *) malloc(width * sizeof(unsigned char));
@@ -32,10 +32,23 @@ unsigned char **to_gray_scale(unsigned char* buffer, int width, int height, int 
     return gray_scale;
 }
 
-void detect_cpu(unsigned char* buffer_start, unsigned char *buffer_obj, int width, int height, int channels) {
+// Perform |gray_ref - gray_obj|
+unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
+    unsigned char **diff = (unsigned char **) malloc(height * sizeof(unsigned char *));
+    for(int i = 0; i < height; i++)
+        diff[i] = (unsigned char *) malloc(width * sizeof(unsigned char));
+
+    for (int r = 0; r < height; r++)
+        for (int c = 0; c < width; c++)
+            diff[r][c] = gray_ref[r][c] > gray_obj[r][c] ? gray_ref[r][c] - gray_obj[r][c] : gray_obj[r][c] - gray_ref[r][c];
+
+    return diff;
+}
+
+void detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
     return;
 }
 
-void detect_gpu(unsigned char* buffer_start, unsigned char *buffer_obj, int width, int height, int channels) {
+void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
     return;
 }

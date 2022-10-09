@@ -20,14 +20,15 @@
 // width = col
 // height = row
 
-void save_matrix(unsigned char **buffer, int width, int height) {
+void save_matrix(unsigned char **buffer, int width, int height, std::string filename) {
     unsigned char *sa = (unsigned char *) std::malloc(width * height * sizeof(unsigned char));
 
     for (int i = 0; i < height; i++)
         for (int j = 0; j < width; j++)
             sa[i * width + j] = buffer[i][j];
 
-    stbi_write_jpg("../images/gray_scale.jpg", width, height, 1, sa, 100);
+    char *file = const_cast<char *>(filename.c_str());
+    stbi_write_jpg(file, width, height, 1, sa, 100);
 }
 
 // Usage: ./mandel
@@ -43,18 +44,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
+    std::string file_save_gray_obj = "../images/gray_scale_obj.jpg";
+    std::string diff_image = "../images/diff.jpg";
+
     int width, height, channels;
     unsigned char *ref_image = stbi_load(argv[1], &width, &height, &channels, 0);
-    unsigned char *obj_image = stbi_load(argv[1], &width, &height, &channels, 0);
+    unsigned char *obj_image = stbi_load(argv[2], &width, &height, &channels, 0);
 
     std::cout << "Reference image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
     std::cout << "Object image: " << argv[1] << " | " <<  height << "x" << width << "x" << channels << "\n";
 
     unsigned char **gray_ref = to_gray_scale(ref_image, width, height, channels);
+    unsigned char **gray_obj = to_gray_scale(obj_image, width, height, channels);
+    save_matrix(gray_ref, width, height, file_save_gray_ref);
+    save_matrix(gray_obj, width, height, file_save_gray_obj);
 
-    save_matrix(gray_ref, width, height);
+    unsigned char **diff = difference(gray_ref, gray_obj, width, height);
+    save_matrix(diff, width, height, diff_image);
 
-    // TODO Free gray_ref
+    // TODO Free gray_ref, gray_obj, diff
     stbi_image_free(ref_image);
     stbi_image_free(obj_image);
 }
