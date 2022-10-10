@@ -35,9 +35,16 @@ target_link_libraries(detecter PRIVATE spdlog::spdlog)
 target_sources(detecter PRIVATE src/detect.hpp src/detect.cu)
 set_target_properties(detecter PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+add_library(blurring)
+target_compile_features(blurring PUBLIC cxx_std_14)
+target_link_libraries(blurring PRIVATE spdlog::spdlog)
+
+target_sources(blurring PRIVATE src/blur.hpp src/blur.cpp)
+
+
 add_executable(mandel src/mandel.cpp)
 target_compile_features(mandel PUBLIC cxx_std_17)
-target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter)
+target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter blurring)
 # target_link_libraries(mandel PRIVATE PNG::PNG CLI11::CLI11 spdlog::spdlog detecter)
 
 add_executable(bench src/bench.cpp)
