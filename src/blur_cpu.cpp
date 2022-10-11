@@ -56,7 +56,8 @@ unsigned char **apply_blurring(unsigned char** image, int width, int height, uns
         for (int y = 0; y < width; ++y) {
             blurred_image[x][y] = convolution(x, y, height, width, image, kernel, kernel_size);
         }
-    
-   return blurred_image; 
+   
+    free2Dmatrix<double **>(kernel_size, kernel);
+    return blurred_image; 
 }
 

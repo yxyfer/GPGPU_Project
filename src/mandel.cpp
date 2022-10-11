@@ -71,19 +71,21 @@ int main(int argc, char** argv)
     save_matrix(gray_obj, width, height, file_save_gray_obj);
 
     // Blurring
-    //TODO: MAKE KERNEL GENERATOR - with better calculations
     unsigned char kernel_size = 5;
-
+    
     unsigned char **blurred_ref = apply_blurring(gray_ref, width, height, kernel_size); 
-    save_matrix(blurred_ref, width, height, file_save_blurred_ref);
-
     unsigned char **blurred_obj = apply_blurring(gray_obj, width, height, kernel_size); 
+    
+    save_matrix(blurred_ref, width, height, file_save_blurred_ref);
     save_matrix(blurred_obj, width, height, file_save_blurred_obj);
 
+    //Difference
     unsigned char **diff = difference(blurred_ref, blurred_obj, width, height);
+
     save_matrix(diff, width, height, diff_image);
 
 
+    // Opening/Closing
     int es_size = 5;    // Has to be odd
     int es_size2 = 31;  // Has to be odd
     unsigned char **k2 = create_array2D<unsigned char>(es_size, es_size, 1);
