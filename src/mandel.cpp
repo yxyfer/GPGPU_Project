@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 
 
     int es_size = 5;
-    int es_size2 = 30;
+    int es_size2 = 31;
     unsigned char **k2 = create_array2D<unsigned char>(es_size, es_size, 1);
     unsigned char **k3 = create_array2D<unsigned char>(es_size2, es_size2, 1);
     /* unsigned char k2_t[7][7] = { { 0, 0, 1, 1, 1, 0, 0 }, */
