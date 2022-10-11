@@ -27,11 +27,10 @@ unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, i
 // FILE: blur_cpu.cpp
 // Apply gaussian blur to the image
 /// \param image The gray scale image
-/// \param kernel The gaussian blur kernel
 /// \param width Image width
 /// \param height Image height
 /// \param kernel_size Kernel size
-unsigned char **blurring(unsigned char** image, unsigned char** kernel, int width, int height, unsigned char kernel_size); 
+unsigned char **apply_blurring(unsigned char** image, int width, int height, unsigned char kernel_size);
 
 
 unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,

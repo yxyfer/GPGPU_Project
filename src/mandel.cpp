@@ -72,28 +72,20 @@ int main(int argc, char** argv)
 
     // Blurring
     //TODO: MAKE KERNEL GENERATOR - with better calculations
-    unsigned char kernel_size = 3;
-    unsigned char **kernel = (unsigned char **) malloc(kernel_size * sizeof(unsigned char *));
+    unsigned char kernel_size = 5;
 
-    for(int i = 0; i < kernel_size; i++)
-        kernel[i] = (unsigned char *) malloc(kernel_size * sizeof(unsigned char));
-
-    for(int i = 0; i < kernel_size; i++)
-        for(int j = 0; j < kernel_size; j++)
-            kernel[i][j] = 1 * (i == 1 ? 2 : 1) * (j == 1 ? 2 : 1);
-  
-    unsigned char **blurred_ref = blurring(gray_ref, kernel, width, height, kernel_size); 
+    unsigned char **blurred_ref = apply_blurring(gray_ref, width, height, kernel_size); 
     save_matrix(blurred_ref, width, height, file_save_blurred_ref);
 
-    unsigned char **blurred_obj = blurring(gray_obj, kernel, width, height, kernel_size); 
+    unsigned char **blurred_obj = apply_blurring(gray_obj, width, height, kernel_size); 
     save_matrix(blurred_obj, width, height, file_save_blurred_obj);
 
     unsigned char **diff = difference(blurred_ref, blurred_obj, width, height);
     save_matrix(diff, width, height, diff_image);
 
 
-    int es_size = 5;
-    int es_size2 = 31;
+    int es_size = 5;    // Has to be odd
+    int es_size2 = 31;  // Has to be odd
     unsigned char **k2 = create_array2D<unsigned char>(es_size, es_size, 1);
     unsigned char **k3 = create_array2D<unsigned char>(es_size2, es_size2, 1);
     /* unsigned char k2_t[7][7] = { { 0, 0, 1, 1, 1, 0, 0 }, */
