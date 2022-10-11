@@ -23,27 +23,27 @@ int product(unsigned char **input, unsigned char **kernel, int i, int j,
 {
     int res = 0;
 
-    if ((i + height_kernel) > height || (j + width_kernel) > width)
-        return 0;
-
-    int cst_height = (height - 1) / 2;
-    int cst_width = (width - 1) / 2;
+    int cst_height = (height_kernel - 1) / 2;
+    int cst_width = (width_kernel - 1) / 2;
     for (size_t k = 0; k < height_kernel; k++)
     {
         for (size_t l = 0; l < width_kernel; l++)
         {
             auto mul =
                 input[k + i - cst_height][l + j - cst_width] * kernel[k][l];
+            if (kernel[k][l] == 0)
+                continue;
             if (mul > res && dilation)
                 res = mul;
             if (!dilation && (res == 0 || mul < res))
+            {
                 res = mul;
+            }
         }
     }
     /*
         if (input[k + i][l + j] != 0 && kernel[k][l] != 0)
             res += kernel[k][l];*/
-
     return res;
 }
 
@@ -159,9 +159,11 @@ unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,
 {
     int kernel_sum = sum_vector(kernel, height_kernel, width_kernel);
     auto output = create_array2D<unsigned char>(height, width, 0);
-    for (size_t i = height_kernel; i < height - height_kernel; i++)
+    int cst_height = (height_kernel - 1) / 2;
+    int cst_width = (width_kernel - 1) / 2;
+    for (size_t i = cst_height; i < height - cst_height; i++)
     {
-        for (size_t j = width_kernel; j < width - width_kernel; j++)
+        for (size_t j = cst_width; j < width - cst_width; j++)
         {
             output[i][j] = product(input, kernel, i, j, height, width,
                                    height_kernel, width_kernel, true);
@@ -184,9 +186,11 @@ unsigned char **perform_erosion(unsigned char **input, unsigned char **kernel,
 {
     int kernel_sum = sum_vector(kernel, height_kernel, width_kernel);
     auto output = create_array2D<unsigned char>(height, width, 0);
-    for (size_t i = height_kernel; i < height - height_kernel; i++)
+    int cst_height = (height_kernel - 1) / 2;
+    int cst_width = (width_kernel - 1) / 2;
+    for (size_t i = cst_height; i < height - cst_height; i++)
     {
-        for (size_t j = width_kernel; j < width - width_kernel; j++)
+        for (size_t j = cst_width; j < width - cst_width; j++)
         {
             output[i][j] = product(input, kernel, i, j, height, width,
                                    height_kernel, width_kernel, false);
@@ -323,8 +327,10 @@ int main()
             k2[i][j] = k2_t[i][j];
         }
     }
-    auto output = perform_erosion(input, k1, 11, 29, 3, 3);
-    output = perform_dilation(output, k1, 11, 29, 3, 3);
+    auto output = perform_dilation(input, k2, 11, 29, 3, 3);
+    output = perform_erosion(output, k2, 11, 29, 3, 3);
+    // output = perform_dilation(output, k1, 11, 29, 3, 3);
+    // output = perform_erosion(output, k1, 11, 29, 3, 3);
     print(input, 11, 29);
     std::cout << '\n';
     print(output, 11, 29);
