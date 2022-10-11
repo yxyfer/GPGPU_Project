@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include "detect_obj.hpp"
+#include "utils.hpp"
 
 void print(unsigned char **input, size_t height, size_t width)
 {
@@ -73,21 +75,21 @@ unsigned char **fill_closing(unsigned char **input, unsigned char **output,
 /*
 Creates a 2D vector filled with the value
 */
-template <typename T>
-T **create_array2D(size_t height, size_t width, T value)
-{
-    T **res = (T **)malloc(height * sizeof(T *));
-    for (size_t i = 0; i < height; i++)
-    {
-        T *line = (T *)malloc(width * sizeof(T));
-        for (size_t j = 0; j < width; j++)
-        {
-            line[j] = value;
-        }
-        res[i] = line;
-    }
-    return res;
-}
+/* template <typename T> */
+/* T **create_array2D(size_t height, size_t width, T value) */
+/* { */
+/*     T **res = (T **)malloc(height * sizeof(T *)); */
+/*     for (size_t i = 0; i < height; i++) */
+/*     { */
+/*         T *line = (T *)malloc(width * sizeof(T)); */
+/*         for (size_t j = 0; j < width; j++) */
+/*         { */
+/*             line[j] = value; */
+/*         } */
+/*         res[i] = line; */
+/*     } */
+/*     return res; */
+/* } */
 
 /*
 Sum the elements of a create_array2D
@@ -237,54 +239,54 @@ unsigned char **perform_closing(unsigned char **input, unsigned char **kernel,
     return output;
 }
 
-int main()
-{
-    unsigned char **input = create_array2D<unsigned char>(11, 29, 0);
-    unsigned char input_t[11][29] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-          0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-          0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-          0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-        { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-          5, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 0, 5 },
-        { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-          5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    };
-    for (size_t i = 0; i < 11; i++)
-    {
-        for (size_t j = 0; j < 29; j++)
-        {
-            input[i][j] = input_t[i][j];
-        }
-    }
-    unsigned char **k1 = create_array2D<unsigned char>(3, 3, 1);
-    unsigned char **k2 = create_array2D<unsigned char>(3, 3, 0);
-    unsigned char k2_t[3][3] = { { 0, 1, 0 }, { 1, 1, 1 }, { 0, 1, 0 } };
-    for (size_t i = 0; i < 3; i++)
-    {
-        for (size_t j = 0; j < 3; j++)
-        {
-            k2[i][j] = k2_t[i][j];
-        }
-    }
-    auto output = perform_opening(input, k1, 11, 29, 3, 3);
-    print(input, 11, 29);
-    std::cout << '\n';
-    print(output, 11, 29);
+/* int main() */
+/* { */
+/*     unsigned char **input = create_array2D<unsigned char>(11, 29, 0); */
+/*     unsigned char input_t[11][29] = { */
+/*         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, */
+/*           0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, */
+/*           0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, */
+/*           0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, */
+/*           5, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 0, 5 }, */
+/*         { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, */
+/*           5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1 }, */
+/*         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, */
+/*         { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, */
+/*           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, */
+/*     }; */
+/*     for (size_t i = 0; i < 11; i++) */
+/*     { */
+/*         for (size_t j = 0; j < 29; j++) */
+/*         { */
+/*             input[i][j] = input_t[i][j]; */
+/*         } */
+/*     } */
+/*     unsigned char **k1 = create_array2D<unsigned char>(3, 3, 1); */
+/*     unsigned char **k2 = create_array2D<unsigned char>(3, 3, 0); */
+/*     unsigned char k2_t[3][3] = { { 0, 1, 0 }, { 1, 1, 1 }, { 0, 1, 0 } }; */
+/*     for (size_t i = 0; i < 3; i++) */
+/*     { */
+/*         for (size_t j = 0; j < 3; j++) */
+/*         { */
+/*             k2[i][j] = k2_t[i][j]; */
+/*         } */
+/*     } */
+/*     auto output = perform_opening(input, k1, 11, 29, 3, 3); */
+/*     print(input, 11, 29); */
+/*     std::cout << '\n'; */
+/*     print(output, 11, 29); */
 
-    return 0;
-}
+/*     return 0; */
+/* } */

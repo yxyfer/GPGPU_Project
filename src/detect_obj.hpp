@@ -34,6 +34,18 @@ unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, i
 unsigned char **blurring(unsigned char** image, unsigned char** kernel, int width, int height, unsigned char kernel_size); 
 
 
+unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,
+                                 size_t height, size_t width,
+                                 size_t height_kernel, size_t width_kernel);
+
+unsigned char **perform_erosion(unsigned char **input, unsigned char **kernel,
+                                size_t height, size_t width,
+                                size_t height_kernel, size_t width_kernel);
+
+unsigned char **perform_opening(unsigned char **input, unsigned char **kernel,
+                                size_t height, size_t width,
+                                size_t height_kernel, size_t width_kernel);
+
 
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer

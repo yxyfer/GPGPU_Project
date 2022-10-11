@@ -1,12 +1,11 @@
 #include "detect_obj.hpp"
+#include "utils.hpp"
 #include <iostream>
 
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
 unsigned char **to_gray_scale(unsigned char *buffer, int width, int height, int channels) {
-    unsigned char **gray_scale = (unsigned char **) malloc(height * sizeof(unsigned char *));
-    for(int i = 0; i < height; i++)
-        gray_scale[i] = (unsigned char *) malloc(width * sizeof(unsigned char));
+    unsigned char **gray_scale = create2Dmatrix<unsigned char>(height, width);
     
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
@@ -21,9 +20,7 @@ unsigned char **to_gray_scale(unsigned char *buffer, int width, int height, int 
 
 // Perform |gray_ref - gray_obj|
 unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
-    unsigned char **diff = (unsigned char **) malloc(height * sizeof(unsigned char *));
-    for(int i = 0; i < height; i++)
-        diff[i] = (unsigned char *) malloc(width * sizeof(unsigned char));
+    unsigned char **diff = create2Dmatrix<unsigned char>(height, width);
 
     for (int r = 0; r < height; r++)
         for (int c = 0; c < width; c++)

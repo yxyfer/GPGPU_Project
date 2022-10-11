@@ -1,4 +1,5 @@
 #include "detect_obj.hpp"
+#include "utils.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,9 +30,7 @@ unsigned int divisor(unsigned char** kernel, unsigned char kernel_size) {
 // Apply gaussian blur to the image
 unsigned char **blurring(unsigned char** image, unsigned char** kernel, int width, int height, unsigned char kernel_size) {
     // Allocating for blurred image
-    unsigned char** blurred_image = (unsigned char**) malloc(height * sizeof(unsigned char*));
-    for(int i = 0; i < height; i++)
-        blurred_image[i] = (unsigned char*) malloc(width * sizeof(unsigned char));
+    unsigned char** blurred_image = create2Dmatrix<unsigned char>(height, width);
 
 
     int margin = (int) kernel_size / 2;
