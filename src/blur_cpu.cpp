@@ -1,4 +1,4 @@
-#include "blur.hpp"
+#include "detect_obj.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>

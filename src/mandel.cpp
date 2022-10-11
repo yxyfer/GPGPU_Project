@@ -5,7 +5,7 @@
 #include <CLI/CLI.hpp>
 #include <spdlog/spdlog.h>
 
-#include "detect.hpp"
+#include "detect_obj.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -13,8 +13,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-
-#include "blur.hpp"
 
 /* stbi_write_png("sky.png", width, height, channels, img, width * channels); */
 /* stbi_write_jpg("sky2.jpg", width, height, channels, img, 100); */

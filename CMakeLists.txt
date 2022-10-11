@@ -31,15 +31,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 add_library(detecter)
 target_compile_features(detecter PUBLIC cxx_std_14)
 target_link_libraries(detecter PRIVATE spdlog::spdlog)
-
-target_sources(detecter PRIVATE src/detect.hpp src/detect.cu)
+target_sources(detecter PRIVATE src/detect_obj.hpp src/detect_obj_gpu.cu src/detect_obj_cpu.cpp)
 set_target_properties(detecter PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 add_library(blurring)
 target_compile_features(blurring PUBLIC cxx_std_14)
 target_link_libraries(blurring PRIVATE spdlog::spdlog)
-
-target_sources(blurring PRIVATE src/blur.hpp src/blur.cpp)
+target_sources(blurring PRIVATE src/detect_obj.hpp src/blur_cpu.cpp)
 
 
 add_executable(mandel src/mandel.cpp)
