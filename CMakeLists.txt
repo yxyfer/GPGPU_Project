@@ -28,9 +28,13 @@ set(CMAKE_CUDA_ARCHITECTURES "75")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+add_library(utilsimage)
+target_compile_features(utilsimage PUBLIC cxx_std_14)
+target_sources(utilsimage PRIVATE src/stb_image.h src/stb_image_write.h src/helpers_images.hpp src/helpers_images.cpp)
 add_library(detecter)
+
 target_compile_features(detecter PUBLIC cxx_std_14)
-target_link_libraries(detecter PRIVATE spdlog::spdlog)
+target_link_libraries(detecter PRIVATE spdlog::spdlog utilsimage)
 target_sources(detecter PRIVATE src/detect_obj.hpp src/detect_obj_gpu.cu src/detect_obj_cpu.cpp)
 set_target_properties(detecter PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -56,7 +60,7 @@ target_sources(threshold PRIVATE src/detect_obj.hpp src/threshold_cpu.cpp)
 
 add_executable(mandel src/mandel.cpp)
 target_compile_features(mandel PUBLIC cxx_std_17)
-target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter blurring openclose threshold) 
+target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter blurring openclose threshold utilsimage) 
 # target_link_libraries(mandel PRIVATE PNG::PNG CLI11::CLI11 spdlog::spdlog detecter)
 
 add_executable(bench src/bench.cpp)

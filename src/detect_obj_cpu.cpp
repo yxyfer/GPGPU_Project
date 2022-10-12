@@ -1,5 +1,6 @@
 #include "detect_obj.hpp"
 #include "utils.hpp"
+#include "helpers_images.hpp"
 #include <iostream>
 
 
@@ -30,6 +31,40 @@ unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, i
 }
 
 
-void detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
-    return;
+unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
+    std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
+    std::string file_save_gray_obj = "../images/gray_scale_obj.jpg";
+    
+    std::string file_save_blurred_ref = "../images/blurred_ref.jpg";
+    std::string file_save_blurred_obj = "../images/blurred_obj.jpg";
+    
+    std::string diff_image = "../images/diff.jpg";
+    
+    // Gray Scale 
+    unsigned char **gray_ref = to_gray_scale(buffer_ref, width, height, channels);
+    unsigned char **gray_obj = to_gray_scale(buffer_obj, width, height, channels);
+
+    save_image(gray_ref, width, height, file_save_gray_ref);
+    save_image(gray_obj, width, height, file_save_gray_obj);
+
+    // Blurring
+    unsigned char kernel_size = 5;
+    
+    unsigned char **blurred_ref = apply_blurring(gray_ref, width, height, kernel_size); 
+    unsigned char **blurred_obj = apply_blurring(gray_obj, width, height, kernel_size); 
+    
+    save_image(blurred_ref, width, height, file_save_blurred_ref);
+    save_image(blurred_obj, width, height, file_save_blurred_obj);
+
+    //Difference
+    unsigned char **diff = difference(blurred_ref, blurred_obj, width, height);
+    
+    save_image(diff, width, height, diff_image);
+
+    free2Dmatrix(height, gray_ref);
+    free2Dmatrix(height, gray_obj);
+    free2Dmatrix(height, blurred_ref);
+    free2Dmatrix(height, blurred_obj);
+
+    return diff;
 }

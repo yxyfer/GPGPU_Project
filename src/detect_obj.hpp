@@ -8,7 +8,7 @@
 /// \param width Image width
 /// \param height Image height
 /// \param channels Image number of channels
-void detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels);
+unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels);
 
 // FILE: detect_obj_cpu.cpp
 /// \param buffer The RGBA24 image buffer
