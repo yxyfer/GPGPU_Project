@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     std::string file_save_blurred_obj = "../images/blurred_obj.jpg";
     std::string file_save_closing = "../images/closing.jpg";
     std::string file_save_opening = "../images/opening.jpg";
-
+    std::string file_save_threshold_base = "../images/threshold_base.jpg";
 
     int width, height, channels;
     unsigned char *ref_image = stbi_load(argv[1], &width, &height, &channels, 0);
@@ -87,7 +87,8 @@ int main(int argc, char** argv)
 
     // Opening/Closing
     int es_size = 5;    // Has to be odd
-    int es_size2 = 31;  // Has to be odd
+    int es_size2 = 7;  // Has to be odd
+
     unsigned char **k2 = create_array2D<unsigned char>(es_size, es_size, 1);
     unsigned char **k3 = create_array2D<unsigned char>(es_size2, es_size2, 1);
     /* unsigned char k2_t[7][7] = { { 0, 0, 1, 1, 1, 0, 0 }, */
@@ -117,6 +118,10 @@ int main(int argc, char** argv)
     output = perform_erosion(diff, k3, height, width, es_size2, es_size2);
     
     save_matrix(output, width, height, file_save_opening);
+
+    // Perform threshold
+    output = apply_thresholding(output, 15, width, height);
+    save_matrix(output, width, height, file_save_threshold_base);
 
     // TODO Free gray_ref, gray_obj, diff
     stbi_image_free(ref_image);

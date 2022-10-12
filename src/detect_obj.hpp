@@ -46,6 +46,9 @@ unsigned char **perform_opening(unsigned char **input, unsigned char **kernel,
                                 size_t height_kernel, size_t width_kernel);
 
 
+
+unsigned char **apply_thresholding(unsigned char** image, unsigned char threshold, int width, int height);
+
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer
 /// \param width Image width
