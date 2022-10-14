@@ -76,7 +76,8 @@ int main(int argc, char** argv)
     save_image(output, width, height, file_save_opening);
 
     // Perform threshold
-    output = apply_thresholding(output, 15, width, height);
+    //output = apply_thresholding(output, 15, width, height);
+    output = apply_thresholding(output, 118, width, height);
     save_image(output, width, height, file_save_threshold_base);
 
     // TODO: free
