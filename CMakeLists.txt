@@ -42,7 +42,7 @@ target_sources(blurring PRIVATE src/detect_obj.hpp src/blur_cpu.cpp)
 add_library(openclose)
 target_compile_features(openclose PUBLIC cxx_std_14)
 target_link_libraries(openclose PRIVATE spdlog::spdlog)
-target_sources(openclose PRIVATE src/detect_obj.hpp src/opening.cpp src/opening_old.cpp)
+target_sources(openclose PRIVATE src/detect_obj.hpp src/opening.cpp)
 
 # add_library(utils)
 # target_compile_features(utils PUBLIC cxx_std_14)
@@ -51,10 +51,9 @@ target_sources(openclose PRIVATE src/detect_obj.hpp src/opening.cpp src/opening_
 
 add_executable(mandel src/mandel.cpp)
 target_compile_features(mandel PUBLIC cxx_std_17)
-target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter blurring openclose) 
+target_link_libraries(mandel PRIVATE CLI11::CLI11 spdlog::spdlog detecter blurring openclose)
 # target_link_libraries(mandel PRIVATE PNG::PNG CLI11::CLI11 spdlog::spdlog detecter)
 
 add_executable(bench src/bench.cpp)
 target_compile_features(bench PUBLIC cxx_std_17)
 target_link_libraries(bench PRIVATE spdlog::spdlog benchmark::benchmark detecter)
-
