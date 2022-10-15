@@ -1,40 +1,40 @@
 #include "detect_obj.hpp"
-#include <vector>
-#include <benchmark/benchmark.h>
+#include "helpers_images.hpp"
 
-constexpr int kRGBASize = 4;
-constexpr int width = 4800;
-constexpr int height = 3200;
-constexpr int niteration = 1000;
+#include <benchmark/benchmark.h>
 
 void BM_Rendering_cpu(benchmark::State& st)
 {
-  int stride = width * kRGBASize;
-  std::vector<char> data(height * stride);
+    int width, height, channels;
+    std::string ref_image_path = "../images/blank.jpg";
+    std::string obj_image_path = "../images/object.jpg";
 
-  /* for (auto _ : st) */
-  /*   detect_cpu(data.data(), data.data(), width, height, stride); */
+    unsigned char *ref_image = load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
+    unsigned char *obj_image = load_image(const_cast<char *>(obj_image_path.c_str()), &width, &height, &channels);
 
-  st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+    for (auto _ : st)
+        detect_cpu(ref_image, obj_image, width, height, channels);
+
+    st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_Rendering_gpu(benchmark::State& st)
-{
-  int stride = width * kRGBASize;
-  std::vector<char> data(height * stride);
+/* void BM_Rendering_gpu(benchmark::State& st) */
+/* { */
+/*   int stride = width * kRGBASize; */
+/*   std::vector<char> data(height * stride); */
 
-  /* for (auto _ : st) */
-  /*   detect_gpu(data.data(), data.data(), width, height, stride); */
+/*   /1* for (auto _ : st) *1/ */
+/*   /1*   detect_gpu(data.data(), data.data(), width, height, stride); *1/ */
 
-  st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
-}
+/*   st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate); */
+/* } */
 
 BENCHMARK(BM_Rendering_cpu)
 ->Unit(benchmark::kMillisecond)
 ->UseRealTime();
 
-BENCHMARK(BM_Rendering_gpu)
-->Unit(benchmark::kMillisecond)
-->UseRealTime();
+/* BENCHMARK(BM_Rendering_gpu) */
+/* ->Unit(benchmark::kMillisecond) */
+/* ->UseRealTime(); */
 
 BENCHMARK_MAIN();

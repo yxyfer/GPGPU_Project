@@ -8,8 +8,8 @@
 /// \param width Image width
 /// \param height Image height
 /// \param channels Image number of channels
-void detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
-                int height, int channels);
+unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
+                           int width, int height, int channels);
 
 // FILE: detect_obj_cpu.cpp
 /// \param buffer The RGBA24 image buffer
@@ -30,12 +30,11 @@ unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj,
 // FILE: blur_cpu.cpp
 // Apply gaussian blur to the image
 /// \param image The gray scale image
-/// \param kernel The gaussian blur kernel
 /// \param width Image width
 /// \param height Image height
 /// \param kernel_size Kernel size
-unsigned char **blurring(unsigned char **image, unsigned char **kernel,
-                         int width, int height, unsigned char kernel_size);
+unsigned char **apply_blurring(unsigned char **image, int width, int height,
+                               unsigned char kernel_size);
 
 unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,
                                  size_t height, size_t width,
@@ -52,6 +51,10 @@ unsigned char **perform_opening(unsigned char **input, unsigned char **kernel,
 unsigned char **perform_closing(unsigned char **input, unsigned char **kernel,
                                 size_t height, size_t width,
                                 size_t height_kernel, size_t width_kernel);
+
+unsigned char **apply_thresholding(unsigned char **image,
+                                   unsigned char threshold, int width,
+                                   int height);
 
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer
