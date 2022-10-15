@@ -1,23 +1,22 @@
+#include <spdlog/spdlog.h>
 #include <CLI/CLI.hpp>
 #include <cstddef>
 #include <iostream>
 #include <memory>
-#include <spdlog/spdlog.h>
 
 #include "detect_obj.hpp"
 #include "helpers_images.hpp"
 #include "utils.hpp"
 
 // Usage: ./mandel
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
 
     std::string mode = "CPU";
 
-    if (argc < 3)
-    {
+    if (argc < 3) {
         std::cout << "Minimum two images are needed\n";
         return 1;
     }
@@ -27,8 +26,8 @@ int main(int argc, char **argv)
     std::string file_save_threshold_base = "../images/threshold_base.jpg";
 
     int width, height, channels;
-    unsigned char *ref_image = load_image(argv[1], &width, &height, &channels);
-    unsigned char *obj_image = load_image(argv[2], &width, &height, &channels);
+    unsigned char* ref_image = load_image(argv[1], &width, &height, &channels);
+    unsigned char* obj_image = load_image(argv[2], &width, &height, &channels);
 
     std::cout << "Reference image: " << argv[1] << " | " << height << "x"
               << width << "x" << channels << "\n";
@@ -36,13 +35,13 @@ int main(int argc, char **argv)
               << "x" << channels << "\n";
 
     // Get difference
-    unsigned char **diff =
+    unsigned char** diff =
         detect_cpu(ref_image, obj_image, width, height, channels);
 
     int es_size = 5;
     int es_size2 = 11;
-    unsigned char **k1 = circular_kernel(es_size);
-    unsigned char **k2 = circular_kernel(es_size2);
+    unsigned char** k1 = circular_kernel(es_size);
+    unsigned char** k2 = circular_kernel(es_size2);
 
     print_mat(k1, es_size, es_size);
 
@@ -61,7 +60,7 @@ int main(int argc, char **argv)
 
     // Perform threshold
     // output = apply_thresholding(output, 15, width, height);
-    auto thresh_img = apply_thresholding(opening, 118, width, height);
+    auto thresh_img = compute_threshold(opening, width, height);
     save_image(thresh_img, width, height, file_save_threshold_base);
 
     // TODO: free
