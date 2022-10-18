@@ -28,6 +28,7 @@ T **create_array2D(size_t height, size_t width, T value)
     return res;
 }
 
+
 template <typename T>
 void free2Dmatrix(size_t rows, T matrix) {
     for (size_t i = 0; i < rows; i++)
@@ -35,3 +36,19 @@ void free2Dmatrix(size_t rows, T matrix) {
 
     free(matrix);
 }
+
+
+/*
+Sum the elements of a create_array2D
+*/
+/* template <typename T> */
+/* int sum_vector(T **vect, size_t height, size_t width) */
+/* { */
+/*     int res = 0; */
+/*     if (height == 0) */
+/*         return 0; */
+/*     for (size_t i = 0; i < height; i++) */
+/*         for (size_t j = 0; j < width; j++) */
+/*             res += vect[i][j]; */
+/*     return res; */
+/* } */

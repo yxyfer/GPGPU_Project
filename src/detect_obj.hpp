@@ -49,29 +49,25 @@ unsigned char** perform_dilation(unsigned char** input,
                                  unsigned char** kernel,
                                  size_t height,
                                  size_t width,
-                                 size_t height_kernel,
-                                 size_t width_kernel);
+                                 size_t kernel_size);
 
 unsigned char** perform_erosion(unsigned char** input,
                                 unsigned char** kernel,
                                 size_t height,
                                 size_t width,
-                                size_t height_kernel,
-                                size_t width_kernel);
+                                size_t kernel_size);
 
 unsigned char** perform_opening(unsigned char** input,
-                                unsigned char** kernel,
-                                size_t height,
-                                size_t width,
-                                size_t height_kernel,
-                                size_t width_kernel);
+                                 unsigned char** kernel,
+                                 size_t height,
+                                 size_t width,
+                                 size_t kernel_size);
 
 unsigned char** perform_closing(unsigned char** input,
                                 unsigned char** kernel,
                                 size_t height,
                                 size_t width,
-                                size_t height_kernel,
-                                size_t width_kernel);
+                                size_t kernel_size);
 
 unsigned char** compute_threshold(unsigned char** image, int width, int height);
 

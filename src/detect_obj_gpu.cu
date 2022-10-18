@@ -59,9 +59,10 @@ __global__ void difference(unsigned char *buffer_ref, unsigned char *buffer_obj,
 }
 
 void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
-    std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg";
-    std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg";
-    std::string file_save_diff = "../images/diff_cuda.jpg";
+    /* std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg"; */
+    /* std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg"; */
+    /* std::string file_save_diff = "../images/diff_cuda.jpg"; */
+
     const int rows = height;
     const int cols = width;
     
@@ -85,14 +86,17 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     to_gray_scale<<<blocks_per_grid, threads_per_bloks>>>(buffer_obj_cuda, gray_obj_cuda, rows, cols, channels);
     cudaCheckError();
 
-    to_save(gray_ref_cuda, height, width, file_save_gray_ref);
-    to_save(gray_obj_cuda, height, width, file_save_gray_obj);
+    // Uncomment to see the images
+    /* to_save(gray_ref_cuda, height, width, file_save_gray_ref); */
+    /* to_save(gray_obj_cuda, height, width, file_save_gray_obj); */
 
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
 
+    // Difference
     difference<<<blocks_per_grid, threads_per_bloks>>>(gray_ref_cuda, gray_obj_cuda, rows, cols);
     
-    to_save(gray_obj_cuda, height, width, file_save_diff);
+    // Uncomment to see the results
+    /* to_save(gray_obj_cuda, height, width, file_save_diff); */
 }
 

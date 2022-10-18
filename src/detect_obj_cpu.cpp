@@ -40,6 +40,9 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     std::string diff_image = "../images/diff.jpg";
     
+    std::string file_save_closing = "../images/closing.jpg";
+    std::string file_save_opening = "../images/opening.jpg";
+    
     // Gray Scale 
     unsigned char **gray_ref = to_gray_scale(buffer_ref, width, height, channels);
     unsigned char **gray_obj = to_gray_scale(buffer_obj, width, height, channels);
@@ -61,10 +64,24 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     save_image(diff, width, height, diff_image);
 
+    // Perform closing/opening
+    int es_size = 5;
+    int es_size2 = 11;
+    unsigned char** k1 = circular_kernel(es_size);
+    unsigned char** k2 = circular_kernel(es_size2);
+
+    // Perform closing
+    auto closing = perform_closing(diff, k1, height, width, es_size);
+    save_image(closing, width, height, file_save_closing);
+
+    // Perform opening
+    auto opening = perform_opening(closing, k2, height, width, es_size2);
+    save_image(opening, width, height, file_save_opening);
+
     free2Dmatrix(height, gray_ref);
     free2Dmatrix(height, gray_obj);
     free2Dmatrix(height, blurred_ref);
     free2Dmatrix(height, blurred_obj);
 
-    return diff;
+    return opening;
 }
