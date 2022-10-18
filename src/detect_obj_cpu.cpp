@@ -82,6 +82,10 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     free2Dmatrix(height, gray_obj);
     free2Dmatrix(height, blurred_ref);
     free2Dmatrix(height, blurred_obj);
+    free2Dmatrix(height, diff);
+    free2Dmatrix(height, closing);
+    free2Dmatrix(es_size, k1);
+    free2Dmatrix(es_size2, k2);
 
     return opening;
 }
