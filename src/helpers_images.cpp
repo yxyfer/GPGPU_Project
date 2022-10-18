@@ -10,6 +10,12 @@ unsigned char *load_image(char *path, int *width, int *height, int *channels) {
     return stbi_load(path, width, height, channels, 0);
 }
 
+
+void save(unsigned char *image, int width, int height, std::string filename) {
+    char *file = const_cast<char *>(filename.c_str());
+    stbi_write_jpg(file, width, height, 1, image, 100);
+}
+
 void save_image(unsigned char **image, int width, int height, std::string filename) {
     unsigned char *flat_image = (unsigned char *) std::malloc(width * height * sizeof(unsigned char));
 

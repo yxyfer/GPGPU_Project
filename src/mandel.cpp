@@ -34,34 +34,36 @@ int main(int argc, char** argv)
     std::cout << "Object image: " << argv[1] << " | " << height << "x" << width
               << "x" << channels << "\n";
 
-    // Get difference
-    unsigned char** diff =
-        detect_cpu(ref_image, obj_image, width, height, channels);
+    detect_gpu(ref_image, obj_image, width, height, channels);
 
-    int es_size = 5;
-    int es_size2 = 11;
-    unsigned char** k1 = circular_kernel(es_size);
-    unsigned char** k2 = circular_kernel(es_size2);
+    /* // Get difference */
+    /* unsigned char** diff = */
+    /*     detect_cpu(ref_image, obj_image, width, height, channels); */
 
-    print_mat(k1, es_size, es_size);
+    /* int es_size = 5; */
+    /* int es_size2 = 11; */
+    /* unsigned char** k1 = circular_kernel(es_size); */
+    /* unsigned char** k2 = circular_kernel(es_size2); */
 
-    // Perform closing/opening
-    auto closing = perform_erosion(diff, k1, height, width, es_size, es_size);
-    closing = perform_dilation(closing, k1, height, width, es_size, es_size);
+    /* print_mat(k1, es_size, es_size); */
 
-    save_image(closing, width, height, file_save_closing);
+    /* // Perform closing/opening */
+    /* auto closing = perform_erosion(diff, k1, height, width, es_size, es_size); */
+    /* closing = perform_dilation(closing, k1, height, width, es_size, es_size); */
 
-    // Perform opening
-    auto opening =
-        perform_dilation(closing, k2, height, width, es_size2, es_size2);
-    opening = perform_erosion(opening, k2, height, width, es_size2, es_size2);
+    /* save_image(closing, width, height, file_save_closing); */
 
-    save_image(opening, width, height, file_save_opening);
+    /* // Perform opening */
+    /* auto opening = */
+    /*     perform_dilation(closing, k2, height, width, es_size2, es_size2); */
+    /* opening = perform_erosion(opening, k2, height, width, es_size2, es_size2); */
 
-    // Perform threshold
-    // output = apply_thresholding(output, 15, width, height);
-    auto thresh_img = compute_threshold(opening, width, height);
-    save_image(thresh_img, width, height, file_save_threshold_base);
+    /* save_image(opening, width, height, file_save_opening); */
+
+    /* // Perform threshold */
+    /* // output = apply_thresholding(output, 15, width, height); */
+    /* auto thresh_img = compute_threshold(opening, width, height); */
+    /* save_image(thresh_img, width, height, file_save_threshold_base); */
 
     // TODO: free
     free_image(ref_image);
