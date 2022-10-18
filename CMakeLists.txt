@@ -61,10 +61,17 @@ set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 
 ##### MAIN
-add_executable(main src/mandel.cpp)
-target_compile_features(main PUBLIC cxx_std_17)
-target_link_libraries(main PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu detector_gpu utilsimage)
+# add_executable(main src/mandel.cpp)
+# target_compile_features(main PUBLIC cxx_std_17)
+# target_link_libraries(main PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu detector_gpu utilsimage)
 
+add_executable(main_cpu src/main_cpu.cpp)
+target_compile_features(main_cpu PUBLIC cxx_std_17)
+target_link_libraries(main_cpu PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu utilsimage)
+
+add_executable(main_gpu src/main_gpu.cpp)
+target_compile_features(main_gpu PUBLIC cxx_std_17)
+target_link_libraries(main_gpu PRIVATE CLI11::CLI11 spdlog::spdlog detector_gpu utilsimage)
 
 ##### BENCH
 add_executable(bench src/bench.cpp)
