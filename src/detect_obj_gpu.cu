@@ -21,52 +21,62 @@ void to_save(unsigned char *buffer_cuda, int height, int width, std::string file
     free(b);
 }
 
+unsigned char *malloc_cuda(size_t size) {
+    unsigned char *buffer;
+    cudaMalloc((void **) &buffer, size);
+    cudaCheckError();
+
+    return buffer;
+}
+
+unsigned char *cpy_host_to_device(unsigned char *buffer, size_t size) {
+    unsigned char *device_buffer = malloc_cuda(size);
+
+    cudaMemcpy(device_buffer, buffer, size, cudaMemcpyHostToDevice);
+    cudaCheckError();
+
+    return device_buffer;
+}
+
 __global__ void to_gray_scale(unsigned char *buffer, unsigned char *result, int rows, int cols, int channels) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
     if (i >= rows * cols * channels)
         return;
 
-    result[i] = (0.30 * buffer[i * channels] + 0.59 * buffer[(i * channels) + 1] + 0.11 * buffer[(i * channels) + 2]);   // RGB 
+    result[i] = (0.30 * buffer[i * channels] +         // R
+                 0.59 * buffer[(i * channels) + 1] +   // G
+                 0.11 * buffer[(i * channels) + 2]);   // B 
 }
 
 void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
+    std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg";
+    std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg";
     const int rows = height;
     const int cols = width;
-    size_t size_color = cols * rows * channels * sizeof(unsigned char);
-    unsigned char *buffer_ref_cuda;
-    unsigned char *buffer_obj_cuda;
+    
+    const size_t size_color = cols * rows * channels * sizeof(unsigned char);
 
-    cudaMalloc((void **) &buffer_ref_cuda, size_color);
-    cudaCheckError();
-    cudaMalloc((void **) &buffer_obj_cuda, size_color);
-    cudaCheckError();
+    // Copy content of host buffer to a cuda buffer
+    unsigned char *buffer_ref_cuda = cpy_host_to_device(buffer_ref, size_color); 
+    unsigned char *buffer_obj_cuda = cpy_host_to_device(buffer_obj, size_color); 
 
-    cudaMemcpy(buffer_ref_cuda, buffer_ref, size_color, cudaMemcpyHostToDevice);
-    cudaCheckError();
-    cudaMemcpy(buffer_obj_cuda, buffer_obj, size_color, cudaMemcpyHostToDevice);
-    cudaCheckError();
-   
     size_t nb_of_elements = cols * rows;
     size_t size = nb_of_elements * sizeof(unsigned char);
-    unsigned char *gray_ref_cuda;
-    unsigned char *gray_obj_cuda;
+    unsigned char *gray_ref_cuda = malloc_cuda(size);
+    unsigned char *gray_obj_cuda = malloc_cuda(size);
     
-    cudaMalloc((void **) &gray_ref_cuda, size);
-    cudaCheckError();
-    cudaMalloc((void **) &gray_obj_cuda, size);
-    cudaCheckError();
-    
-    int threads_per_bloks = 1024;
-    int blocks_per_grid = (nb_of_elements + threads_per_bloks - 1) / threads_per_bloks;
+    const int threads_per_bloks = 1024;
+    const int blocks_per_grid = (nb_of_elements + threads_per_bloks - 1) / threads_per_bloks;
 
+    // Apply gray scale
     to_gray_scale<<<blocks_per_grid, threads_per_bloks>>>(buffer_ref_cuda, gray_ref_cuda, rows, cols, channels);
     cudaCheckError();
     to_gray_scale<<<blocks_per_grid, threads_per_bloks>>>(buffer_obj_cuda, gray_obj_cuda, rows, cols, channels);
     cudaCheckError();
-    
-    std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg";
-    std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg";
+
+    cudaFree(buffer_ref_cuda);
+    cudaFree(buffer_obj_cuda);
 
     to_save(gray_ref_cuda, height, width, file_save_gray_ref);
     to_save(gray_obj_cuda, height, width, file_save_gray_obj);
