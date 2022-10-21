@@ -49,53 +49,58 @@ int product(unsigned char **input, unsigned char **kernel, int i, int j,
 /*
 Compute the morphological opening of the image
 */
-unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,
+void perform_dilation(unsigned char **input, unsigned char **temp, unsigned char **kernel,
                                  size_t height, size_t width, size_t kernel_size)
 {
-    auto output = create_array2D<unsigned char>(height, width, 0);
     int cst_size = (kernel_size - 1) / 2;
+
     for (size_t i = cst_size; i < height - cst_size; i++)
     {
         for (size_t j = cst_size; j < width - cst_size; j++)
         {
-            output[i][j] = product(input, kernel, i, j, kernel_size, true);
+            temp[i][j] = product(input, kernel, i, j, kernel_size, true);
         }
     }
-    return output;
 }
 
-unsigned char **perform_erosion(unsigned char **input, unsigned char **kernel,
+void perform_erosion(unsigned char **input, unsigned char **temp, unsigned char **kernel,
                                 size_t height, size_t width, size_t kernel_size)
 {
-    auto output = create_array2D<unsigned char>(height, width, 0);
     int cst_size = (kernel_size - 1) / 2;
+
+    for (int i = 0; i < cst_size; i++) {
+        for (int j = 0; j < cst_size; j++) {
+            temp[i][j] = 0;
+            temp[height - i - 1][width - j - 1] = 0;
+        }
+    }
+
     for (size_t i = cst_size; i < height - cst_size; i++)
     {
         for (size_t j = cst_size; j < width - cst_size; j++)
         {
-            output[i][j] = product(input, kernel, i, j, kernel_size, false); 
+            temp[i][j] = product(input, kernel, i, j, kernel_size, false); 
         }
     }
-    return output;
 }
 
-unsigned char **perform_opening(unsigned char **input, unsigned char **kernel,
-                                size_t height, size_t width, size_t kernel_size) {
-    auto opening_dil = perform_dilation(input, kernel, height, width, kernel_size);
-    auto opening_ero = perform_erosion(opening_dil, kernel, height, width, kernel_size);
+/* unsigned char **perform_opening(unsigned char **input, unsigned char **kernel, */
+/*                                 size_t height, size_t width, size_t kernel_size) { */
+/*     auto opening_dil = perform_dilation(input, kernel, height, width, kernel_size); */
+/*     auto opening_ero = perform_erosion(opening_dil, kernel, height, width, kernel_size); */
 
-    free2Dmatrix(height, opening_dil);
-    return opening_ero;
-}
+/*     free2Dmatrix(height, opening_dil); */
+/*     return opening_ero; */
+/* } */
 
-unsigned char **perform_closing(unsigned char **input, unsigned char **kernel,
-                                size_t height, size_t width, size_t kernel_size) {
-    auto closing_ero = perform_erosion(input, kernel, height, width, kernel_size);
-    auto closing_dil = perform_dilation(closing_ero, kernel, height, width, kernel_size);
+/* unsigned char **perform_closing(unsigned char **input, unsigned char **kernel, */
+/*                                 size_t height, size_t width, size_t kernel_size) { */
+/*     auto closing_ero = perform_erosion(input, kernel, height, width, kernel_size); */
+/*     auto closing_dil = perform_dilation(closing_ero, kernel, height, width, kernel_size); */
 
-    free2Dmatrix(height, closing_ero);
-    return closing_dil;
-}
+/*     free2Dmatrix(height, closing_ero); */
+/*     return closing_dil; */
+/* } */
 
 // kernel_size must be odd
 unsigned char **circular_kernel(int kernel_size)

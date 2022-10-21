@@ -3,29 +3,37 @@
 #include "helpers_images.hpp"
 #include <iostream>
 
+void swap_matrix(struct ImageMat *a, struct ImageMat *b) {
+    unsigned char **temp = a->pixel;
+    a->pixel = b->pixel;
+    b->pixel = temp;
+}
 
-void swap_matrix(unsigned char ***a, unsigned char ***b) {
-    unsigned char **temp = *a;
-    *a = *b;
-    *b = temp;
+struct ImageMat *new_matrix(int height, int width) {
+    struct ImageMat *matrix = (struct ImageMat *)std::malloc(sizeof(struct ImageMat));
+    matrix->pixel = create2Dmatrix<unsigned char>(height, width);
+    matrix->height = height;
+    matrix->width = width;
+
+    return matrix;
 }
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
-void to_gray_scale(unsigned char *src, unsigned char **dst, int width, int height, int channels) {
+void to_gray_scale(unsigned char *src, struct ImageMat *dst, int width, int height, int channels) {
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
-            dst[r][c] = (0.30 * src[(r * width + c) * channels] +       // R
-                         0.59 * src[(r * width + c) * channels + 1] +   // G
-                         0.11 * src[(r * width + c) * channels + 2]);   // B
+            dst->pixel[r][c] = (0.30 * src[(r * width + c) * channels] +       // R
+                                0.59 * src[(r * width + c) * channels + 1] +   // G
+                                0.11 * src[(r * width + c) * channels + 2]);   // B
         }
     }
 }
 
 // Perform |gray_ref - gray_obj|
-void difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
-    for (int r = 0; r < height; r++)
-        for (int c = 0; c < width; c++)
-            gray_obj[r][c] = abs(gray_ref[r][c] - gray_obj[r][c]);
+void difference(struct ImageMat *ref, struct ImageMat* obj) {
+    for (int r = 0; r < ref->height; r++)
+        for (int c = 0; c < ref->width; c++)
+            obj->pixel[r][c] = abs(ref->pixel[r][c] - obj->pixel[r][c]);
 }
 
 
@@ -42,55 +50,64 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     std::string file_save_opening = "../images/opening.jpg";
 
     // Create 2D ref and obj matrix and 2D temp matrix
-    unsigned char **ref_matrix = create2Dmatrix<unsigned char>(height, width);
-    unsigned char **obj_matrix = create2Dmatrix<unsigned char>(height, width);
-    unsigned char **temp_matrix = create2Dmatrix<unsigned char>(height, width);
-    
-    // Gray Scale 
-    to_gray_scale(buffer_ref, ref_matrix, width, height, channels);
-    to_gray_scale(buffer_obj, obj_matrix, width, height, channels);
 
-    save_image(ref_matrix, width, height, file_save_gray_ref);
-    save_image(obj_matrix, width, height, file_save_gray_obj);
+    struct ImageMat *ref_image = new_matrix(height, width);
+    struct ImageMat *obj_image = new_matrix(height, width);
+    struct ImageMat *temp_image = new_matrix(height, width);
+
+    // Gray Scale 
+    to_gray_scale(buffer_ref, ref_image, width, height, channels);
+    to_gray_scale(buffer_obj, obj_image, width, height, channels);
+
+    save_image(ref_image->pixel, width, height, file_save_gray_ref);
+    save_image(obj_image->pixel, width, height, file_save_gray_obj);
 
     // Blurring
-    unsigned char kernel_size = 5;
-    double **kernel = create_gaussian_kernel(kernel_size);
+    struct GaussianKernel* g_kernel = create_gaussian_kernel(5);
     
-    apply_blurring(ref_matrix, temp_matrix, width, height, kernel, kernel_size); 
-    swap_matrix(&temp_matrix, &ref_matrix);
-    apply_blurring(obj_matrix, temp_matrix, width, height, kernel, kernel_size);
-    swap_matrix(&temp_matrix, &obj_matrix);
+    apply_blurring(ref_image, temp_image, g_kernel);
+    apply_blurring(obj_image, temp_image, g_kernel);
 
-    free2Dmatrix(kernel_size, kernel);
-    
-    save_image(ref_matrix, width, height, file_save_blurred_ref);
-    save_image(obj_matrix, width, height, file_save_blurred_obj);
+    save_image(ref_image->pixel, width, height, file_save_blurred_ref);
+    save_image(obj_image->pixel, width, height, file_save_blurred_obj);
 
     //Difference change obj
-    difference(ref_matrix, obj_matrix, width, height);
+    difference(ref_image, obj_image);
     
-    save_image(obj_matrix, width, height, diff_image);
+    save_image(obj_image->pixel, width, height, diff_image);
 
-    // Perform closing/opening
-    int es_size = 5;
-    int es_size2 = 11;
-    unsigned char** k1 = circular_kernel(es_size);
-    unsigned char** k2 = circular_kernel(es_size2);
+    return obj_image->pixel;
 
-    // Perform closing
-    auto closing = perform_closing(obj_matrix, k1, height, width, es_size);
-    save_image(closing, width, height, file_save_closing);
+    /* // Perform closing/opening */
+    /* int es_size = 5; */
+    /* int es_size2 = 11; */
+    /* unsigned char** k1 = circular_kernel(es_size); */
+    /* unsigned char** k2 = circular_kernel(es_size2); */
 
-    // Perform opening
-    auto opening = perform_opening(closing, k2, height, width, es_size2);
-    save_image(opening, width, height, file_save_opening);
+    /* // Perform closing */
+    /* perform_erosion(obj_matrix, temp_matrix, k1, height, width, es_size); */
+    /* swap_matrix(&obj_matrix, &temp_matrix); */
+    /* perform_dilation(obj_matrix, temp_matrix,  k1, height, width, es_size); */
+    /* swap_matrix(&obj_matrix, &temp_matrix); */
 
-    free2Dmatrix(height, ref_matrix);
-    free2Dmatrix(height, obj_matrix);
-    free2Dmatrix(height, closing);
-    free2Dmatrix(es_size, k1);
-    free2Dmatrix(es_size2, k2);
+    /* /1* auto closing = perform_closing(obj_matrix, k1, height, width, es_size); *1/ */
+    /* save_image(obj_matrix, width, height, file_save_closing); */
+    
 
-    return opening;
+    /* // Perform opening */
+    /* perform_dilation(obj_matrix, temp_matrix, k2, height, width, es_size2); */
+    /* swap_matrix(&obj_matrix, &temp_matrix); */
+    /* perform_erosion(obj_matrix, temp_matrix, k2, height, width, es_size2); */
+    /* swap_matrix(&obj_matrix, &temp_matrix); */
+
+    /* // auto opening = perform_opening(closing, k2, height, width, es_size2); */
+    /* save_image(obj_matrix, width, height, file_save_opening); */
+    
+    /* /1* free2Dmatrix(height, ref_matrix); *1/ */
+    /* /1* free2Dmatrix(height, obj_matrix); *1/ */
+    /* /1* free2Dmatrix(height, closing); *1/ */
+    /* free2Dmatrix(es_size, k1); */
+    /* free2Dmatrix(es_size2, k2); */
+
+    /* return obj_matrix; */
 }
