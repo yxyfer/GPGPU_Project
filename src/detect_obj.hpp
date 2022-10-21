@@ -30,6 +30,14 @@ struct GaussianKernel* create_gaussian_kernel(unsigned char size);
 ///// FILE: struct_utils.cpp
 struct MorphologicalKernel* circular_kernel(int kernel_size);
 
+/// FILE: struct_utils.cpp
+void freeImageMat(struct ImageMat *a);
+
+/// FILE: struct_utils.cpp
+void freeGaussianKernel(struct GaussianKernel *kernel);
+
+/// FILE: struct_utils.cpp
+void freeMorphologicalKernel(struct MorphologicalKernel *kernel);
 
 // FILE: detect_obj_cpu.cpp
 /// \param buffer_ref: The RGBA24 image buffer

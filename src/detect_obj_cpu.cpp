@@ -70,19 +70,17 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     perform_dilation(obj_image, temp_image, k1);
     
     save_image(obj_image->pixel, width, height, file_save_closing);
-    
+   
+    // Perform opening
     perform_dilation(obj_image, temp_image, k2);
     perform_erosion(obj_image, temp_image, k2);
 
     save_image(obj_image->pixel, width, height, file_save_opening);
 
+    freeImageMat(ref_image);
+    freeGaussianKernel(g_kernel);
+    freeMorphologicalKernel(k1);
+    freeMorphologicalKernel(k2);
+
     return obj_image->pixel;
-
-
-    /* /1* free2Dmatrix(height, obj_matrix); *1/ */
-    /* /1* free2Dmatrix(height, closing); *1/ */
-    /* free2Dmatrix(es_size, k1); */
-    /* free2Dmatrix(es_size2, k2); */
-
-    /* return obj_matrix; */
 }

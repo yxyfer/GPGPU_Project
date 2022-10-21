@@ -70,3 +70,21 @@ struct GaussianKernel* create_gaussian_kernel(unsigned char size) {
 
     return g_kernel;
 }
+
+/// FILE: struct_utils.cpp
+void freeImageMat(struct ImageMat *a) {
+    free2Dmatrix(a->height, a->pixel);
+    free(a);
+}
+
+/// FILE: struct_utils.cpp
+void freeGaussianKernel(struct GaussianKernel *kernel) {
+    free2Dmatrix(kernel->size, kernel->kernel);
+    free(kernel);
+}
+
+/// FILE: struct_utils.cpp
+void freeMorphologicalKernel(struct MorphologicalKernel *kernel) {
+    free2Dmatrix(kernel->size, kernel->kernel);
+    free(kernel);
+}
