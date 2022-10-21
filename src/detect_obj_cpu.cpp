@@ -53,15 +53,18 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
 
     // Blurring
     unsigned char kernel_size = 5;
+    double **kernel = create_gaussian_kernel(kernel_size);
     
-    unsigned char **blurred_ref = apply_blurring(ref_matrix, width, height, kernel_size); 
-    unsigned char **blurred_obj = apply_blurring(obj_matrix, width, height, kernel_size); 
+    apply_blurring(ref_matrix, temp_matrix, width, height, kernel, kernel_size); 
+    apply_blurring(obj_matrix, temp_matrix, width, height, kernel, kernel_size);
+
+    free2Dmatrix(kernel_size, kernel);
     
-    save_image(blurred_ref, width, height, file_save_blurred_ref);
-    save_image(blurred_obj, width, height, file_save_blurred_obj);
+    save_image(ref_matrix, width, height, file_save_blurred_ref);
+    save_image(obj_matrix, width, height, file_save_blurred_obj);
 
     //Difference
-    unsigned char **diff = difference(blurred_ref, blurred_obj, width, height);
+    unsigned char **diff = difference(ref_matrix, obj_matrix, width, height);
     
     save_image(diff, width, height, diff_image);
 
@@ -81,8 +84,6 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
 
     free2Dmatrix(height, ref_matrix);
     free2Dmatrix(height, obj_matrix);
-    free2Dmatrix(height, blurred_ref);
-    free2Dmatrix(height, blurred_obj);
     free2Dmatrix(height, diff);
     free2Dmatrix(height, closing);
     free2Dmatrix(es_size, k1);

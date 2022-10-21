@@ -25,6 +25,8 @@ void to_gray_scale(unsigned char* src,
                    int height,
                    int channels);
 
+double **create_gaussian_kernel(unsigned char size);
+
 // FILE: detect_obj_cpu.cpp
 /// \param gray_ref The gray scale image buffer
 /// \param gray_obj The gray scale image buffer
@@ -41,10 +43,12 @@ unsigned char** difference(unsigned char** gray_ref,
 /// \param width Image width
 /// \param height Image height
 /// \param kernel_size Kernel size
-unsigned char** apply_blurring(unsigned char** image,
-                               int width,
-                               int height,
-                               unsigned char kernel_size);
+void apply_blurring(unsigned char** image,
+                    unsigned char** temp,
+                    int width,
+                    int height,
+                    double **kernel,
+                    unsigned char kernel_size);
 
 unsigned char** perform_dilation(unsigned char** input,
                                  unsigned char** kernel,

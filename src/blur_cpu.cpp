@@ -9,10 +9,11 @@
 // (1 / 2*pi*sigma^2) / e(-(x^2 + y^2)/2 * sigma^2)
 double **create_gaussian_kernel(unsigned char size) {
     double **kernel = create2Dmatrix<double>(size, size);
-    int margin = (int) size / 2;
-    double sigma = 1.0;
 
-    double s = 2.0 * sigma * sigma;
+    const int margin = (int) size / 2;
+    const double sigma = 5.0;
+    const double s = 2.0 * sigma * sigma;
+    
     // sum is for normalization
     double sum = 0.0;
 
@@ -47,17 +48,15 @@ unsigned char convolution(int x, int y, int height, int width, unsigned char **i
     return conv;
 }
 
-unsigned char **apply_blurring(unsigned char** image, int width, int height, unsigned char kernel_size) {
-    // Allocating for blurred image
-    unsigned char** blurred_image = create2Dmatrix<unsigned char>(height, width);
-    double **kernel = create_gaussian_kernel(kernel_size);
-    
+void apply_blurring(unsigned char** image, unsigned char **temp, int width, int height, double **kernel, unsigned char kernel_size) {
     for (int x = 0; x < height; ++x)
         for (int y = 0; y < width; ++y) {
-            blurred_image[x][y] = convolution(x, y, height, width, image, kernel, kernel_size);
+            temp[x][y] = convolution(x, y, height, width, image, kernel, kernel_size);
         }
-   
-    free2Dmatrix<double **>(kernel_size, kernel);
-    return blurred_image; 
+
+    // Change pointer temp <-> image
+    unsigned char **temp_pointer = image;
+    image = temp;
+    temp = temp_pointer;
 }
 
