@@ -10,9 +10,9 @@
 double **create_gaussian_kernel(unsigned char size) {
     double **kernel = create2Dmatrix<double>(size, size);
 
-    const int margin = (int) size / 2;
-    const double sigma = 5.0;
-    const double s = 2.0 * sigma * sigma;
+    int margin = (int) size / 2;
+    double sigma = 1.0;
+    double s = 2.0 * sigma * sigma;
     
     // sum is for normalization
     double sum = 0.0;
@@ -53,10 +53,5 @@ void apply_blurring(unsigned char** image, unsigned char **temp, int width, int 
         for (int y = 0; y < width; ++y) {
             temp[x][y] = convolution(x, y, height, width, image, kernel, kernel_size);
         }
-
-    // Change pointer temp <-> image
-    unsigned char **temp_pointer = image;
-    image = temp;
-    temp = temp_pointer;
 }
 

@@ -4,6 +4,12 @@
 #include <iostream>
 
 
+void swap_matrix(unsigned char ***a, unsigned char ***b) {
+    unsigned char **temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
 void to_gray_scale(unsigned char *src, unsigned char **dst, int width, int height, int channels) {
     for (int r = 0; r < height; r++) {
@@ -16,14 +22,10 @@ void to_gray_scale(unsigned char *src, unsigned char **dst, int width, int heigh
 }
 
 // Perform |gray_ref - gray_obj|
-unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
-    unsigned char **diff = create2Dmatrix<unsigned char>(height, width);
-
+void difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
     for (int r = 0; r < height; r++)
         for (int c = 0; c < width; c++)
-            diff[r][c] = abs(gray_ref[r][c] - gray_obj[r][c]);
-
-    return diff;
+            gray_obj[r][c] = abs(gray_ref[r][c] - gray_obj[r][c]);
 }
 
 
@@ -56,17 +58,19 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     double **kernel = create_gaussian_kernel(kernel_size);
     
     apply_blurring(ref_matrix, temp_matrix, width, height, kernel, kernel_size); 
+    swap_matrix(&temp_matrix, &ref_matrix);
     apply_blurring(obj_matrix, temp_matrix, width, height, kernel, kernel_size);
+    swap_matrix(&temp_matrix, &obj_matrix);
 
     free2Dmatrix(kernel_size, kernel);
     
     save_image(ref_matrix, width, height, file_save_blurred_ref);
     save_image(obj_matrix, width, height, file_save_blurred_obj);
 
-    //Difference
-    unsigned char **diff = difference(ref_matrix, obj_matrix, width, height);
+    //Difference change obj
+    difference(ref_matrix, obj_matrix, width, height);
     
-    save_image(diff, width, height, diff_image);
+    save_image(obj_matrix, width, height, diff_image);
 
     // Perform closing/opening
     int es_size = 5;
@@ -75,7 +79,7 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     unsigned char** k2 = circular_kernel(es_size2);
 
     // Perform closing
-    auto closing = perform_closing(diff, k1, height, width, es_size);
+    auto closing = perform_closing(obj_matrix, k1, height, width, es_size);
     save_image(closing, width, height, file_save_closing);
 
     // Perform opening
@@ -84,7 +88,6 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
 
     free2Dmatrix(height, ref_matrix);
     free2Dmatrix(height, obj_matrix);
-    free2Dmatrix(height, diff);
     free2Dmatrix(height, closing);
     free2Dmatrix(es_size, k1);
     free2Dmatrix(es_size2, k2);

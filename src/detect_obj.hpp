@@ -32,7 +32,7 @@ double **create_gaussian_kernel(unsigned char size);
 /// \param gray_obj The gray scale image buffer
 /// \param width Image width
 /// \param height Image height
-unsigned char** difference(unsigned char** gray_ref,
+void difference(unsigned char** gray_ref,
                            unsigned char** gray_obj,
                            int width,
                            int height);
