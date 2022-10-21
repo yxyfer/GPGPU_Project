@@ -51,7 +51,7 @@ float otsu_criteria(unsigned char** image,
         (unsigned char*)malloc(nb_whitep * sizeof(unsigned char));
     unsigned char* black_pixels =
         (unsigned char*)malloc((nb_pixels - nb_whitep) * sizeof(unsigned char));
-
+    
     unsigned int wp_i = 0;
     unsigned int bp_i = 0;
 
@@ -146,8 +146,8 @@ unsigned char get_otsu_threshold(unsigned char** in_image,
     int threshold_index = get_min_index(otsu_vals, range_size);
     unsigned char otsu_threshold = threshold_range[threshold_index];
 
-    printf("\nmin index %d ", threshold_index);
-    printf("\nthreshold %d ", otsu_threshold);
+    printf("min index %d\n", threshold_index);
+    printf("threshold %d\n", otsu_threshold);
 
     return otsu_threshold;
 }
@@ -197,11 +197,13 @@ unsigned char** compute_otsu_threshold(unsigned char** in_image,
 
     unsigned char otsu_threshold2 =
         get_otsu_threshold(base_image, width, height);
+    otsu_threshold2 = otsu_threshold * 2.5;
+    /* otsu_threshold2 = 65; */
     unsigned char** bin_image =
         apply_bin_threshold(base_image, otsu_threshold2, width, height);
 
-    printf("otsu_threshold 1 %i", otsu_threshold);
-    printf("otsu_threshold 2 %i", otsu_threshold2);
+    printf("otsu_threshold 1 %i\n", otsu_threshold);
+    printf("otsu_threshold 2 %i\n", otsu_threshold2);
 
     return bin_image;
 }
