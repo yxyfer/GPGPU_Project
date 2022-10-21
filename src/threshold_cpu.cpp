@@ -51,7 +51,7 @@ float otsu_criteria(unsigned char** image,
         (unsigned char*)malloc(nb_whitep * sizeof(unsigned char));
     unsigned char* black_pixels =
         (unsigned char*)malloc((nb_pixels - nb_whitep) * sizeof(unsigned char));
-    
+
     unsigned int wp_i = 0;
     unsigned int bp_i = 0;
 
@@ -84,6 +84,11 @@ float otsu_criteria(unsigned char** image,
 
     if (weight_whitep == 0 || weight_blackp == 0)
         return inf;
+
+    // Freeing variables
+    free(thresholded_image);
+    free(white_pixels);
+    free(black_pixels);
 
     return (float)weight_whitep * var_white + (float)weight_blackp * var_black;
 }
@@ -191,14 +196,18 @@ unsigned char** compute_otsu_threshold(unsigned char** in_image,
                                        int width,
                                        int height)
 {
+    // unsigned char** threshold_image =
+    //     create2Dmatrix<unsigned char>(height, width);
+
     unsigned char otsu_threshold = get_otsu_threshold(in_image, width, height);
     unsigned char** base_image =
         apply_base_threshold(in_image, otsu_threshold, width, height);
 
-    unsigned char otsu_threshold2 =
-        get_otsu_threshold(base_image, width, height);
-    otsu_threshold2 = otsu_threshold * 2.5;
-    /* otsu_threshold2 = 65; */
+    // unsigned char otsu_threshold2 =
+    // get_otsu_threshold(base_image, width, height);
+
+    unsigned char otsu_threshold2 = otsu_threshold * 2.5;
+
     unsigned char** bin_image =
         apply_bin_threshold(base_image, otsu_threshold2, width, height);
 
