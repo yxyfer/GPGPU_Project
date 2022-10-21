@@ -3,20 +3,6 @@
 #include "helpers_images.hpp"
 #include <iostream>
 
-void swap_matrix(struct ImageMat *a, struct ImageMat *b) {
-    unsigned char **temp = a->pixel;
-    a->pixel = b->pixel;
-    b->pixel = temp;
-}
-
-struct ImageMat *new_matrix(int height, int width) {
-    struct ImageMat *matrix = (struct ImageMat *)std::malloc(sizeof(struct ImageMat));
-    matrix->pixel = create2Dmatrix<unsigned char>(height, width);
-    matrix->height = height;
-    matrix->width = width;
-
-    return matrix;
-}
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
 void to_gray_scale(unsigned char *src, struct ImageMat *dst, int width, int height, int channels) {
@@ -76,34 +62,23 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     save_image(obj_image->pixel, width, height, diff_image);
 
+    struct MorphologicalKernel* k1 = circular_kernel(5);
+    struct MorphologicalKernel* k2 = circular_kernel(11);
+   
+    // Perform closing
+    perform_erosion(obj_image, temp_image, k1);
+    perform_dilation(obj_image, temp_image, k1);
+    
+    save_image(obj_image->pixel, width, height, file_save_closing);
+    
+    perform_dilation(obj_image, temp_image, k2);
+    perform_erosion(obj_image, temp_image, k2);
+
+    save_image(obj_image->pixel, width, height, file_save_opening);
+
     return obj_image->pixel;
 
-    /* // Perform closing/opening */
-    /* int es_size = 5; */
-    /* int es_size2 = 11; */
-    /* unsigned char** k1 = circular_kernel(es_size); */
-    /* unsigned char** k2 = circular_kernel(es_size2); */
 
-    /* // Perform closing */
-    /* perform_erosion(obj_matrix, temp_matrix, k1, height, width, es_size); */
-    /* swap_matrix(&obj_matrix, &temp_matrix); */
-    /* perform_dilation(obj_matrix, temp_matrix,  k1, height, width, es_size); */
-    /* swap_matrix(&obj_matrix, &temp_matrix); */
-
-    /* /1* auto closing = perform_closing(obj_matrix, k1, height, width, es_size); *1/ */
-    /* save_image(obj_matrix, width, height, file_save_closing); */
-    
-
-    /* // Perform opening */
-    /* perform_dilation(obj_matrix, temp_matrix, k2, height, width, es_size2); */
-    /* swap_matrix(&obj_matrix, &temp_matrix); */
-    /* perform_erosion(obj_matrix, temp_matrix, k2, height, width, es_size2); */
-    /* swap_matrix(&obj_matrix, &temp_matrix); */
-
-    /* // auto opening = perform_opening(closing, k2, height, width, es_size2); */
-    /* save_image(obj_matrix, width, height, file_save_opening); */
-    
-    /* /1* free2Dmatrix(height, ref_matrix); *1/ */
     /* /1* free2Dmatrix(height, obj_matrix); *1/ */
     /* /1* free2Dmatrix(height, closing); *1/ */
     /* free2Dmatrix(es_size, k1); */
