@@ -19,10 +19,11 @@ unsigned char** detect_cpu(unsigned char* buffer_ref,
 /// \param width Image width
 /// \param height Image height
 /// \param channels Image number of channels
-unsigned char** to_gray_scale(unsigned char* buffer,
-                              int width,
-                              int height,
-                              int channels);
+void to_gray_scale(unsigned char* src,
+                   unsigned char** dst,
+                   int width,
+                   int height,
+                   int channels);
 
 // FILE: detect_obj_cpu.cpp
 /// \param gray_ref The gray scale image buffer

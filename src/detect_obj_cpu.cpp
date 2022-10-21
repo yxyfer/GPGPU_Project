@@ -5,18 +5,14 @@
 
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
-unsigned char **to_gray_scale(unsigned char *buffer, int width, int height, int channels) {
-    unsigned char **gray_scale = create2Dmatrix<unsigned char>(height, width);
-    
+void to_gray_scale(unsigned char *src, unsigned char **dst, int width, int height, int channels) {
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
-            gray_scale[r][c] = (0.30 * buffer[(r * width + c) * channels] +       // R
-                                0.59 * buffer[(r * width + c) * channels + 1] +   // G
-                                0.11 * buffer[(r * width + c) * channels + 2]);   // B
+            dst[r][c] = (0.30 * src[(r * width + c) * channels] +       // R
+                         0.59 * src[(r * width + c) * channels + 1] +   // G
+                         0.11 * src[(r * width + c) * channels + 2]);   // B
         }
     }
-
-    return gray_scale;
 }
 
 // Perform |gray_ref - gray_obj|
@@ -42,19 +38,24 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     std::string file_save_closing = "../images/closing.jpg";
     std::string file_save_opening = "../images/opening.jpg";
+
+    // Create 2D ref and obj matrix and 2D temp matrix
+    unsigned char **ref_matrix = create2Dmatrix<unsigned char>(height, width);
+    unsigned char **obj_matrix = create2Dmatrix<unsigned char>(height, width);
+    unsigned char **temp_matrix = create2Dmatrix<unsigned char>(height, width);
     
     // Gray Scale 
-    unsigned char **gray_ref = to_gray_scale(buffer_ref, width, height, channels);
-    unsigned char **gray_obj = to_gray_scale(buffer_obj, width, height, channels);
+    to_gray_scale(buffer_ref, ref_matrix, width, height, channels);
+    to_gray_scale(buffer_obj, obj_matrix, width, height, channels);
 
-    save_image(gray_ref, width, height, file_save_gray_ref);
-    save_image(gray_obj, width, height, file_save_gray_obj);
+    save_image(ref_matrix, width, height, file_save_gray_ref);
+    save_image(obj_matrix, width, height, file_save_gray_obj);
 
     // Blurring
     unsigned char kernel_size = 5;
     
-    unsigned char **blurred_ref = apply_blurring(gray_ref, width, height, kernel_size); 
-    unsigned char **blurred_obj = apply_blurring(gray_obj, width, height, kernel_size); 
+    unsigned char **blurred_ref = apply_blurring(ref_matrix, width, height, kernel_size); 
+    unsigned char **blurred_obj = apply_blurring(obj_matrix, width, height, kernel_size); 
     
     save_image(blurred_ref, width, height, file_save_blurred_ref);
     save_image(blurred_obj, width, height, file_save_blurred_obj);
@@ -78,8 +79,8 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     auto opening = perform_opening(closing, k2, height, width, es_size2);
     save_image(opening, width, height, file_save_opening);
 
-    free2Dmatrix(height, gray_ref);
-    free2Dmatrix(height, gray_obj);
+    free2Dmatrix(height, ref_matrix);
+    free2Dmatrix(height, obj_matrix);
     free2Dmatrix(height, blurred_ref);
     free2Dmatrix(height, blurred_obj);
     free2Dmatrix(height, diff);
