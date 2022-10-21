@@ -45,7 +45,7 @@ struct GaussianKernel* create_gaussian_kernel(unsigned char size) {
     double **kernel = create2Dmatrix<double>(size, size);
 
     int margin = (int) size / 2;
-    double sigma = 1.0;
+    double sigma = 2.0;
     double s = 2.0 * sigma * sigma;
     
     // sum is for normalization
