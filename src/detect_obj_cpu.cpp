@@ -22,48 +22,6 @@ void difference(struct ImageMat *ref, struct ImageMat* obj) {
             obj->pixel[r][c] = abs(ref->pixel[r][c] - obj->pixel[r][c]);
 }
 
-void detect_objects(struct ImageMat *ref, unsigned char *buffer_obj,
-                    struct ImageMat *obj, struct ImageMat *temp,
-                    struct GaussianKernel *g_kernel,
-                    struct MorphologicalKernel *k1, struct MorphologicalKernel *k2) {
-    to_gray_scale(buffer_obj, obj, ref->height, ref->width, 3);
-    apply_blurring(obj, temp, g_kernel);
-    
-    difference(ref, obj);
-    
-    perform_erosion(obj, temp, k1);
-    perform_dilation(obj, temp, k1);
-    
-    perform_dilation(obj, temp, k2);
-    perform_erosion(obj, temp, k2);
-}
-
-void main_detect_cpu(unsigned char **images, int length, int width, int height) {
-    struct ImageMat *ref_image = new_matrix(height, width);
-    struct ImageMat *obj_image = new_matrix(height, width);
-    struct ImageMat *temp_image = new_matrix(height, width);
-
-    struct GaussianKernel* g_kernel = create_gaussian_kernel(5);
-    struct MorphologicalKernel* k1 = circular_kernel(5);
-    struct MorphologicalKernel* k2 = circular_kernel(11);
-
-
-    to_gray_scale(images[0], ref_image, ref->height, ref->width, 3);
-    apply_blurring(ref_image, temp_image, g_kernel);
-
-    for (int i = 0; i < length; i++) {
-        detect_objects(ref_image, images[i], obj_image, temp_image, g_kernel, k1, k2);
-    }
-
-    freeImageMat(ref_image);
-    freeImageMat(temp_image);
-    freeImageMat(obj_image);
-    freeGaussianKernel(g_kernel);
-    freeMorphologicalKernel(k1);
-    freeMorphologicalKernel(k2);
-}
-
-
 unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
     std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
     std::string file_save_gray_obj = "../images/gray_scale_obj.jpg";

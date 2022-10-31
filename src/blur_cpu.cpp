@@ -12,12 +12,15 @@ unsigned char convolution(int x, int y, struct ImageMat *image, struct GaussianK
     double conv = 0;
     // get kernel val
     int margin = (int) kernel->size / 2;
-    for(int i = -margin ; i <= margin; i++)
+    for(int i = -margin ; i <= margin; i++) {
+        if (x + i < 0 || x + i >=image->height)
+            continue;
         for(int j = -margin; j <= margin; j++) {
-            if (x + i < 0 || y + j < 0 || x + i >= image->height || y + j >= image->width)
+            if (y + j < 0 || y + j >= image->width)
                 continue;
             conv += image->pixel[x + i][y + j] * kernel->kernel[i + margin][j + margin];
         }
+    }
 
     return conv;
 }

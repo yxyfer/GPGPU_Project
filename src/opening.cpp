@@ -22,9 +22,9 @@ int product(struct ImageMat *input, struct MorphologicalKernel *kernel, int i, i
             if ((kernel->kernel[k][l] == 0) || (l + j - cst_size < 0) || (l + j - cst_size >= input->width))
                 continue;
 
-            auto mul = input->pixel[k + i - cst_size][l + j - cst_size] * kernel->kernel[k][l];
+            const auto mul = input->pixel[k + i - cst_size][l + j - cst_size] * kernel->kernel[k][l];
 
-            if (mul > res && dilation)
+            if (dilation && mul > res)
                 res = mul;
             
             if (!dilation && (res == 0 || mul < res))
@@ -37,12 +37,8 @@ int product(struct ImageMat *input, struct MorphologicalKernel *kernel, int i, i
 void perform_dilation(struct ImageMat *input, struct ImageMat *temp, struct MorphologicalKernel *kernel)
 {
     for (int i = 0; i < input->height; i++)
-    {
         for (int j = 0; j < input->width; j++)
-        {
             temp->pixel[i][j] = product(input, kernel, i, j, true);
-        }
-    }
     
     swap_matrix(input, temp);
 }
@@ -50,12 +46,8 @@ void perform_dilation(struct ImageMat *input, struct ImageMat *temp, struct Morp
 void perform_erosion(struct ImageMat *input, struct ImageMat *temp, struct MorphologicalKernel *kernel)
 {
     for (int i = 0; i < input->height; i++)
-    {
         for (int j = 0; j < input->width; j++)
-        {
             temp->pixel[i][j] = product(input, kernel, i, j, false); 
-        }
-    }
 
     swap_matrix(input, temp);
 }
