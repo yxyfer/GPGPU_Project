@@ -92,20 +92,20 @@ struct Bbox ***main_detection(unsigned char **images, int length, int width, int
     return all_boxes;
 }
 
-struct Bbox **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
-                           int width, int height, int channels, int *nb_obj) {
-    /* std::string file_save_gray_ref = "../images/gray_scale_ref.jpg"; */
-    /* std::string file_save_gray_obj = "../images/gray_scale_obj.jpg"; */
+struct Bbox **main_detection_test(unsigned char *buffer_ref, unsigned char *buffer_obj,
+                                  int width, int height, int channels, int *nb_obj) {
+    std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
+    std::string file_save_gray_obj = "../images/gray_scale_obj.jpg";
     
-    /* std::string file_save_blurred_ref = "../images/blurred_ref.jpg"; */
-    /* std::string file_save_blurred_obj = "../images/blurred_obj.jpg"; */
+    std::string file_save_blurred_ref = "../images/blurred_ref.jpg";
+    std::string file_save_blurred_obj = "../images/blurred_obj.jpg";
     
-    /* std::string diff_image = "../images/diff.jpg"; */
+    std::string diff_image = "../images/diff.jpg";
     
-    /* std::string file_save_closing = "../images/closing.jpg"; */
-    /* std::string file_save_opening = "../images/opening.jpg"; */
+    std::string file_save_closing = "../images/closing.jpg";
+    std::string file_save_opening = "../images/opening.jpg";
     
-    /* std::string file_save_threshold_base = "../images/threshold_base.jpg"; */
+    std::string file_save_threshold_base = "../images/threshold_base.jpg";
 
     // Create 2D ref and obj matrix and 2D temp matrix
 
@@ -117,8 +117,8 @@ struct Bbox **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     to_gray_scale(buffer_ref, ref_image, width, height, channels);
     to_gray_scale(buffer_obj, obj_image, width, height, channels);
 
-    /* save_image(ref_image->pixel, width, height, file_save_gray_ref); */
-    /* save_image(obj_image->pixel, width, height, file_save_gray_obj); */
+    save_image(ref_image->pixel, width, height, file_save_gray_ref);
+    save_image(obj_image->pixel, width, height, file_save_gray_obj);
 
     // Blurring
     struct GaussianKernel* g_kernel = create_gaussian_kernel(5);
@@ -126,13 +126,13 @@ struct Bbox **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     apply_blurring(ref_image, temp_image, g_kernel);
     apply_blurring(obj_image, temp_image, g_kernel);
 
-    /* save_image(ref_image->pixel, width, height, file_save_blurred_ref); */
-    /* save_image(obj_image->pixel, width, height, file_save_blurred_obj); */
+    save_image(ref_image->pixel, width, height, file_save_blurred_ref);
+    save_image(obj_image->pixel, width, height, file_save_blurred_obj);
 
     //Difference change obj
     difference(ref_image, obj_image);
     
-    /* save_image(obj_image->pixel, width, height, diff_image); */
+    save_image(obj_image->pixel, width, height, diff_image);
 
     struct MorphologicalKernel* k1 = circular_kernel(5);
     struct MorphologicalKernel* k2 = circular_kernel(11);
@@ -141,16 +141,16 @@ struct Bbox **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     perform_erosion(obj_image, temp_image, k1);
     perform_dilation(obj_image, temp_image, k1);
     
-    /* save_image(obj_image->pixel, width, height, file_save_closing); */
+    save_image(obj_image->pixel, width, height, file_save_closing);
    
     // Perform opening
     perform_dilation(obj_image, temp_image, k2);
     perform_erosion(obj_image, temp_image, k2);
 
-    /* save_image(obj_image->pixel, width, height, file_save_opening); */
+    save_image(obj_image->pixel, width, height, file_save_opening);
 
     int nb_components = compute_threshold(obj_image, temp_image);
-    /* save_image(obj_image->pixel, width, height, file_save_threshold_base); */
+    save_image(obj_image->pixel, width, height, file_save_threshold_base);
 
     struct Bbox** bboxes = get_bbox(obj_image, nb_components);
     *nb_obj = nb_components;

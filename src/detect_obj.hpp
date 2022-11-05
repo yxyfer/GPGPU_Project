@@ -52,13 +52,21 @@ void freeMorphologicalKernel(struct MorphologicalKernel *kernel);
 /// \param width: Image width
 /// \param height: Image height
 /// \param channels: Image number of channels
-struct Bbox** detect_cpu(unsigned char* buffer_ref,
-                           unsigned char* buffer_obj,
-                           int width,
-                           int height,
-                           int channels,
-                           int* nb_obj);
+/// \param nb_obj: Return the number of objects in the image
+struct Bbox** main_detection_test(unsigned char* buffer_ref,
+                                  unsigned char* buffer_obj,
+                                  int width,
+                                  int height,
+                                  int channels,
+                                  int* nb_obj);
 
+// FILE: detect_obj_cpu.cpp
+/// \param images: List of images, ref in the fisrt position
+/// \param length: Length of the list
+/// \param width: Image width
+/// \param height: Image height
+/// \param channels: Image number of channels
+/// \param nb_objs: Return the number of objects in the images
 struct Bbox ***main_detection(unsigned char **images,
                               int length,
                               int width,
