@@ -191,49 +191,49 @@ void compute_otsu_threshold(struct ImageMat* in_image,
     // Second threshold saved to out_image_2
     apply_bin_threshold(in_image, out_image_2, otsu_threshold2);
 
-    printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold,
-           otsu_threshold2);
+    /* printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold, */
+    /*        otsu_threshold2); */
 }
 
-char check_neighbours(struct ImageMat* L,
+char check_neighbours(struct ImageMat* in_otsu_2,
                       struct ImageMat* in_otsu_1,
                       int x,
                       int y)
 {
-    unsigned char final_val = L->pixel[x][y];
+    unsigned char final_val = in_otsu_2->pixel[x][y];
 
-    if (in_otsu_1->pixel[x - 1][y] > final_val && L->pixel[x - 1][y] != 0)
+    if (in_otsu_1->pixel[x - 1][y] > final_val && in_otsu_2->pixel[x - 1][y] != 0)
         // final_val = in_otsu_1[x - 1][y];
         final_val = 255;
-    if (in_otsu_1->pixel[x + 1][y] > final_val && L->pixel[x + 1][y] != 0)
+    if (in_otsu_1->pixel[x + 1][y] > final_val && in_otsu_2->pixel[x + 1][y] != 0)
         // final_val = in_otsu_1[x + 1][y];
         final_val = 255;
-    if (in_otsu_1->pixel[x][y - 1] > final_val && L->pixel[x][y - 1] != 0)
+    if (in_otsu_1->pixel[x][y - 1] > final_val && in_otsu_2->pixel[x][y - 1] != 0)
         // final_val = in_otsu_1[x][y - 1];
         final_val = 255;
-    if (in_otsu_1->pixel[x][y + 1] > final_val && L->pixel[x][y + 1] != 0)
+    if (in_otsu_1->pixel[x][y + 1] > final_val && in_otsu_2->pixel[x][y + 1] != 0)
         // final_val = in_otsu_1[x][y + 1];
         final_val = 255;
 
     // TODO: CHECK IF WE NEED DIAGONALS?
 
     char changed = 0;
-    if (final_val != L->pixel[x][y])
+    if (final_val != in_otsu_2->pixel[x][y])
         changed = 1;
 
-    L->pixel[x][y] = final_val;
+    in_otsu_2->pixel[x][y] = final_val;
     return changed;
 }
 
 // TODO: TAKE CARE OF CORNERS
-char propagate(struct ImageMat* L,
+char propagate(struct ImageMat* in_otsu_2,
                struct ImageMat* in_otsu_1)
 {
     char changed = 0;
 
-    for (int i = 1; i < L->height - 1; ++i)
-        for (int j = 1; j < L->width - 1; ++j) {
-            char has_changed = check_neighbours(L, in_otsu_1, i, j);
+    for (int i = 1; i < in_otsu_2->height - 1; ++i)
+        for (int j = 1; j < in_otsu_2->width - 1; ++j) {
+            char has_changed = check_neighbours(in_otsu_2, in_otsu_1, i, j);
             if (has_changed)
                 changed = 1;
         }
@@ -250,16 +250,11 @@ void connexe_components(struct ImageMat* in_otsu_1,
     }
 }
 
-void compute_threshold(struct ImageMat* threshold_image_1,
-                       struct ImageMat* threshold_image_2)
+void compute_threshold(struct ImageMat* base_image,
+                       struct ImageMat* temp_image)
 {
-    /* unsigned char** threshold_image_2 = */
-    /*     create2Dmatrix<unsigned char>(height, width); */
+    compute_otsu_threshold(base_image, temp_image);
+    connexe_components(base_image, temp_image);
 
-    compute_otsu_threshold(threshold_image_1, threshold_image_2);
-    connexe_components(threshold_image_1, threshold_image_2);
-
-    // TODO: FREE IN MAIN !
-    swap_matrix(threshold_image_1, threshold_image_2);
-    /* return threshold_image_2; */
+    swap_matrix(base_image, temp_image);
 }

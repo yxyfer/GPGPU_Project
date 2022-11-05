@@ -98,7 +98,9 @@ void perform_erosion(struct ImageMat* input,
                      struct MorphologicalKernel* kernel);
 
 
-/* unsigned char** compute_threshold(unsigned char** image, int width, int height); */
+// FILE: threshold_cpu.cpp
+/// \param image: The struct image
+/// \param temp: A temp struct image
 void compute_threshold(struct ImageMat* image, struct ImageMat* temp);
 
 /// \param buffer_ref The RGBA24 image buffer

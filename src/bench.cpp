@@ -6,7 +6,7 @@
 
 void BM_gray_scale(benchmark::State& st) {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
+    std::string ref_image_path = "../images/base.png";
     
     unsigned char *ref_image = load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     struct ImageMat *image = new_matrix(height, width);
@@ -20,7 +20,7 @@ void BM_gray_scale(benchmark::State& st) {
 
 void BM_blurring(benchmark::State& st) {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
+    std::string ref_image_path = "../images/base.png";
     
     load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     struct ImageMat *image = new_matrix(height, width);
@@ -36,7 +36,7 @@ void BM_blurring(benchmark::State& st) {
 
 void BM_difference(benchmark::State& st) {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
+    std::string ref_image_path = "../images/base.png";
     
     load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     struct ImageMat *image1 = new_matrix(height, width);
@@ -50,7 +50,7 @@ void BM_difference(benchmark::State& st) {
 
 void BM_closing(benchmark::State& st) {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
+    std::string ref_image_path = "../images/base.png";
     
     load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     struct MorphologicalKernel* k1 = circular_kernel(5);
@@ -67,7 +67,7 @@ void BM_closing(benchmark::State& st) {
 
 void BM_opening(benchmark::State& st) {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
+    std::string ref_image_path = "../images/base.png";
     
     load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     struct MorphologicalKernel* k1 = circular_kernel(11);
@@ -82,11 +82,26 @@ void BM_opening(benchmark::State& st) {
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_threshold(benchmark::State& st) {
+    int width, height, channels;
+    std::string ref_image_path = "../images/base.png";
+    
+    load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
+    struct ImageMat *image1 = new_matrix(height, width);
+    struct ImageMat *image2 = new_matrix(height, width);
+    
+    for (auto _ : st) {
+        compute_threshold(image1, image2);
+    }
+    
+    st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
 void BM_Rendering_cpu(benchmark::State& st)
 {
     int width, height, channels;
-    std::string ref_image_path = "../images/blank.jpg";
-    std::string obj_image_path = "../images/object.jpg";
+    std::string ref_image_path = "../images/base.png";
+    std::string obj_image_path = "../images/obj.png";
 
     unsigned char *ref_image = load_image(const_cast<char *>(ref_image_path.c_str()), &width, &height, &channels);
     unsigned char *obj_image = load_image(const_cast<char *>(obj_image_path.c_str()), &width, &height, &channels);
@@ -125,6 +140,10 @@ BENCHMARK(BM_closing)
 ->UseRealTime();
 
 BENCHMARK(BM_opening)
+->Unit(benchmark::kMillisecond)
+->UseRealTime();
+
+BENCHMARK(BM_threshold)
 ->Unit(benchmark::kMillisecond)
 ->UseRealTime();
 
