@@ -227,13 +227,17 @@ char check_neighbours(unsigned char** L,
     unsigned char final_val = L[x][y];
 
     if (in_otsu_1[x - 1][y] > final_val && L[x - 1][y] != 0)
-        final_val = in_otsu_1[x - 1][y];
+        // final_val = in_otsu_1[x - 1][y];
+        final_val = 255;
     if (in_otsu_1[x + 1][y] > final_val && L[x + 1][y] != 0)
-        final_val = in_otsu_1[x + 1][y];
+        // final_val = in_otsu_1[x + 1][y];
+        final_val = 255;
     if (in_otsu_1[x][y - 1] > final_val && L[x][y - 1] != 0)
-        final_val = in_otsu_1[x][y - 1];
+        // final_val = in_otsu_1[x][y - 1];
+        final_val = 255;
     if (in_otsu_1[x][y + 1] > final_val && L[x][y + 1] != 0)
-        final_val = in_otsu_1[x][y + 1];
+        // final_val = in_otsu_1[x][y + 1];
+        final_val = 255;
 
     // TODO: CHECK IF WE NEED DIAGONALS?
 
@@ -297,15 +301,9 @@ unsigned char** compute_threshold(unsigned char** image, int width, int height)
     unsigned char** connexe_component =
         connexe_components(otsu_threshold1, thresholded_image, width, height);
 
-    // for (int j = 0; j < height; ++j) {
-    // for (int i = 0; i < width; ++i) {
-    // printf("%hhu", connexe_component[j][i]);
-    // }
-    // printf("\n");
-    // }
-
     // Free
     free(otsu_threshold1);
+    free(thresholded_image);
 
     // return thresholded_image;
     return connexe_component;
