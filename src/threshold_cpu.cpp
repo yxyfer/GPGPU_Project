@@ -207,6 +207,78 @@ void compute_otsu_threshold(unsigned char** in_image,
            otsu_threshold2);
 }
 
+void init_connexe_components(unsigned char** L,
+                             unsigned char** in_otsu_2,
+                             int width,
+                             int height)
+{
+    for (int i = 0; i < height; ++i)
+        for (int j = 0; j < width; ++j) {
+            L[i][j] = in_otsu_2[i][j];
+        }
+}
+
+char check_neighbours(unsigned char** L,
+                      unsigned char** in_otsu_1,
+                      int x,
+                      int y)
+{
+    unsigned char final_val = L[x][y];
+
+    if (in_otsu_1[x - 1][y] > final_val && L[x - 1][y] != 0)
+        final_val = in_otsu_1[x - 1][y];
+    if (in_otsu_1[x + 1][y] > final_val && L[x + 1][y] != 0)
+        final_val = in_otsu_1[x + 1][y];
+    if (in_otsu_1[x][y - 1] > final_val && L[x][y - 1] != 0)
+        final_val = in_otsu_1[x][y - 1];
+    if (in_otsu_1[x][y + 1] > final_val && L[x][y + 1] != 0)
+        final_val = in_otsu_1[x][y + 1];
+
+    // TODO: CHECK IF WE NEED DIAGONALS?
+
+    char changed = 0;
+    if (final_val != L[x][y])
+        changed = 1;
+
+    L[x][y] = final_val;
+    return changed;
+}
+
+// TODO: TAKE CARE OF CORNERS
+char propagate(unsigned char**& L,
+               unsigned char** in_otsu_1,
+               int width,
+               int height)
+{
+    char changed = 0;
+
+    for (int i = 1; i < height - 1; ++i)
+        for (int j = 1; j < width - 1; ++j) {
+            char has_changed = check_neighbours(L, in_otsu_1, i, j);
+            if (has_changed)
+                changed = 1;
+        }
+
+    return changed;
+}
+
+unsigned char** connexe_components(unsigned char** in_otsu_1,
+                                   unsigned char** in_otsu_2,
+                                   int width,
+                                   int height)
+{
+    unsigned char** L = create2Dmatrix<unsigned char>(height, width);
+
+    init_connexe_components(L, in_otsu_2, width, height);
+
+    char l_changed = 1;
+    while (l_changed) {
+        l_changed = propagate(L, in_otsu_1, width, height);
+    }
+
+    return L;
+}
+
 unsigned char** compute_threshold(unsigned char** image, int width, int height)
 {
     //  TODO: Add connexe composent for output image
@@ -221,8 +293,19 @@ unsigned char** compute_threshold(unsigned char** image, int width, int height)
     compute_otsu_threshold(image, otsu_threshold1, thresholded_image, width,
                            height);
 
+    unsigned char** connexe_component =
+        connexe_components(otsu_threshold1, thresholded_image, width, height);
+
+    // for (int j = 0; j < height; ++j) {
+    // for (int i = 0; i < width; ++i) {
+    // printf("%hhu", connexe_component[j][i]);
+    // }
+    // printf("\n");
+    // }
+
     // Free
     free(otsu_threshold1);
 
-    return thresholded_image;
+    // return thresholded_image;
+    return connexe_component;
 }
