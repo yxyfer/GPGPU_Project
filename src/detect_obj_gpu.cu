@@ -82,9 +82,9 @@ __global__ void gaussian_blur(unsigned char *image, int rows, int cols, int kern
    int margin = (int) kernel_size / 2;
    for(int j = -margin ; j <= margin; j++)
        for(int k = -margin; k <= margin; k++) {
-           if (i + j < 0 || i + k * cols < 0 || i + j >= rows || i + k * cols >= cols)
+           if (i + k < 0 || i + j * cols < 0 || i + k >= cols || i + j * cols >= rows)
                continue;
-           conv += image[(i + j) + (i + k) * cols] * kernel[j + margin][k + margin];
+           conv += image[i + k + (j * cols)] * kernel[j + margin][k + margin];
        }
 
    __syncthreads(); 
@@ -142,8 +142,10 @@ __global__ void difference(unsigned char *buffer_ref, unsigned char *buffer_obj,
 void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
     std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg";
     std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg";
+
     std::string file_save_blur_ref = "../images/blurred_ref_cuda.jpg";
     std::string file_save_blur_obj = "../images/blurred_obj_cuda.jpg";
+
     std::string file_save_diff = "../images/diff_cuda.jpg";
 
     const int rows = height;
@@ -180,7 +182,9 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     double **kernel = create_gaussian_kernel(kernel_size);
 
     gaussian_blur<<<blocks_per_grid, threads_per_bloks>>>(gray_ref_cuda, rows, cols, kernel_size, kernel);
+    cudaCheckError();
     gaussian_blur<<<blocks_per_grid, threads_per_bloks>>>(gray_obj_cuda, rows, cols, kernel_size, kernel);
+    cudaCheckError();
 
     to_save(gray_ref_cuda, height, width, file_save_blur_ref);
     to_save(gray_obj_cuda, height, width, file_save_blur_obj);
