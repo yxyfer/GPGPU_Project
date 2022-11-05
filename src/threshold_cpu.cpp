@@ -154,18 +154,17 @@ unsigned char get_otsu_threshold(unsigned char** in_image,
     return otsu_threshold;
 }
 
-void apply_base_threshold(unsigned char** in_image,
-                          unsigned char** out_image,
+void apply_base_threshold(unsigned char** image,
                           unsigned char threshold,
                           int width,
                           int height)
 {
     for (int x = 0; x < height; ++x)
         for (int y = 0; y < width; ++y) {
-            if (in_image[x][y] >= threshold)
-                out_image[x][y] = in_image[x][y];
+            if (image[x][y] >= threshold)
+                continue;
             else
-                out_image[x][y] = 0;
+                image[x][y] = 0;
         }
 }
 
@@ -185,7 +184,6 @@ void apply_bin_threshold(unsigned char** in_image,
 }
 
 void compute_otsu_threshold(unsigned char** in_image,
-                            unsigned char**& out_image_1,
                             unsigned char**& out_image_2,
                             int width,
                             int height)
@@ -197,12 +195,10 @@ void compute_otsu_threshold(unsigned char** in_image,
     unsigned char otsu_threshold2 = otsu_threshold * 2.5;
 
     // First threshold saved to out_image_1
-    apply_base_threshold(in_image, out_image_1, otsu_threshold - 10, width,
-                         height);
+    apply_base_threshold(in_image, otsu_threshold - 10, width, height);
 
     // Second threshold saved to out_image_2
-    apply_bin_threshold(out_image_1, out_image_2, otsu_threshold2, width,
-                        height);
+    apply_bin_threshold(in_image, out_image_2, otsu_threshold2, width, height);
 
     printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold,
            otsu_threshold2);
@@ -284,27 +280,20 @@ unsigned char** connexe_components(unsigned char** in_otsu_1,
     return L;
 }
 
-unsigned char** compute_threshold(unsigned char** image, int width, int height)
+unsigned char** compute_threshold(unsigned char** threshold_image_1,
+                                  int width,
+                                  int height)
 {
-    //  TODO: Add connexe composent for output image
-
-    unsigned char** otsu_threshold1 =
+    unsigned char** threshold_image_2 =
         create2Dmatrix<unsigned char>(height, width);
 
-    // TODO: Change this to the actual connexe component linker
-    unsigned char** thresholded_image =
-        create2Dmatrix<unsigned char>(height, width);
-
-    compute_otsu_threshold(image, otsu_threshold1, thresholded_image, width,
-                           height);
+    compute_otsu_threshold(threshold_image_1, threshold_image_2, width, height);
 
     unsigned char** connexe_component =
-        connexe_components(otsu_threshold1, thresholded_image, width, height);
+        connexe_components(threshold_image_1, threshold_image_2, width, height);
 
     // Free
-    free2Dmatrix(height, otsu_threshold1);
-    free2Dmatrix(height, thresholded_image);
+    free2Dmatrix(height, threshold_image_2);
 
-    // return thresholded_image;
     return connexe_component;
 }
