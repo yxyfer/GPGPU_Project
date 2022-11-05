@@ -86,7 +86,7 @@ float otsu_criteria(unsigned char** image,
         return inf;
 
     // Freeing variables
-    free(thresholded_image);
+    free2Dmatrix(height, thresholded_image);
     free(white_pixels);
     free(black_pixels);
 
@@ -154,18 +154,17 @@ unsigned char get_otsu_threshold(unsigned char** in_image,
     return otsu_threshold;
 }
 
-void apply_base_threshold(unsigned char** in_image,
-                          unsigned char** out_image,
+void apply_base_threshold(unsigned char** image,
                           unsigned char threshold,
                           int width,
                           int height)
 {
     for (int x = 0; x < height; ++x)
         for (int y = 0; y < width; ++y) {
-            if (in_image[x][y] >= threshold)
-                out_image[x][y] = in_image[x][y];
+            if (image[x][y] >= threshold)
+                continue;
             else
-                out_image[x][y] = 0;
+                image[x][y] = 0;
         }
 }
 
@@ -185,7 +184,6 @@ void apply_bin_threshold(unsigned char** in_image,
 }
 
 void compute_otsu_threshold(unsigned char** in_image,
-                            unsigned char**& out_image_1,
                             unsigned char**& out_image_2,
                             int width,
                             int height)
@@ -197,32 +195,84 @@ void compute_otsu_threshold(unsigned char** in_image,
     unsigned char otsu_threshold2 = otsu_threshold * 2.5;
 
     // First threshold saved to out_image_1
-    apply_base_threshold(in_image, out_image_1, otsu_threshold, width, height);
+    apply_base_threshold(in_image, otsu_threshold - 10, width, height);
 
     // Second threshold saved to out_image_2
-    apply_bin_threshold(out_image_1, out_image_2, otsu_threshold2, width,
-                        height);
+    apply_bin_threshold(in_image, out_image_2, otsu_threshold2, width, height);
 
     printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold,
            otsu_threshold2);
 }
 
-unsigned char** compute_threshold(unsigned char** image, int width, int height)
+char check_neighbours(unsigned char** L,
+                      unsigned char** in_otsu_1,
+                      int x,
+                      int y)
 {
-    //  TODO: Add connexe composent for output image
+    unsigned char final_val = L[x][y];
 
-    unsigned char** otsu_threshold1 =
+    if (in_otsu_1[x - 1][y] > final_val && L[x - 1][y] != 0)
+        // final_val = in_otsu_1[x - 1][y];
+        final_val = 255;
+    if (in_otsu_1[x + 1][y] > final_val && L[x + 1][y] != 0)
+        // final_val = in_otsu_1[x + 1][y];
+        final_val = 255;
+    if (in_otsu_1[x][y - 1] > final_val && L[x][y - 1] != 0)
+        // final_val = in_otsu_1[x][y - 1];
+        final_val = 255;
+    if (in_otsu_1[x][y + 1] > final_val && L[x][y + 1] != 0)
+        // final_val = in_otsu_1[x][y + 1];
+        final_val = 255;
+
+    // TODO: CHECK IF WE NEED DIAGONALS?
+
+    char changed = 0;
+    if (final_val != L[x][y])
+        changed = 1;
+
+    L[x][y] = final_val;
+    return changed;
+}
+
+// TODO: TAKE CARE OF CORNERS
+char propagate(unsigned char**& L,
+               unsigned char** in_otsu_1,
+               int width,
+               int height)
+{
+    char changed = 0;
+
+    for (int i = 1; i < height - 1; ++i)
+        for (int j = 1; j < width - 1; ++j) {
+            char has_changed = check_neighbours(L, in_otsu_1, i, j);
+            if (has_changed)
+                changed = 1;
+        }
+
+    return changed;
+}
+
+void connexe_components(unsigned char** in_otsu_1,
+                        unsigned char** in_otsu_2,
+                        int width,
+                        int height)
+{
+    char l_changed = 1;
+    while (l_changed) {
+        l_changed = propagate(in_otsu_2, in_otsu_1, width, height);
+    }
+}
+
+unsigned char** compute_threshold(unsigned char** threshold_image_1,
+                                  int width,
+                                  int height)
+{
+    unsigned char** threshold_image_2 =
         create2Dmatrix<unsigned char>(height, width);
 
-    // TODO: Change this to the actual connexe component linker
-    unsigned char** thresholded_image =
-        create2Dmatrix<unsigned char>(height, width);
+    compute_otsu_threshold(threshold_image_1, threshold_image_2, width, height);
+    connexe_components(threshold_image_1, threshold_image_2, width, height);
 
-    compute_otsu_threshold(image, otsu_threshold1, thresholded_image, width,
-                           height);
-
-    // Free
-    free(otsu_threshold1);
-
-    return thresholded_image;
+    // TODO: FREE IN MAIN !
+    return threshold_image_2;
 }
