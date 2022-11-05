@@ -6,6 +6,14 @@
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
 void to_gray_scale(unsigned char *src, struct ImageMat *dst, int width, int height, int channels) {
+    if (channels == 1) {
+        for (int r = 0; r < height; r++)
+            for (int c = 0; c < width; c++)
+                dst->pixel[r][c] = src[r * width + c];
+       
+        return;
+    }
+
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
             dst->pixel[r][c] = (0.30 * src[(r * width + c) * channels] +       // R
