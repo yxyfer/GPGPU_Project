@@ -32,6 +32,5 @@ int main(int argc, char** argv)
     auto thresh_img = compute_threshold(opening, width, height);
     save_image(thresh_img, width, height, file_save_threshold_base);
 
-    // TODO: free
     free_images(images, argc - 1);
 }

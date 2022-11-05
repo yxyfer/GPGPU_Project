@@ -1,42 +1,30 @@
 #include <cmath>
 #include <iostream>
-#include <vector>
 
 #include "detect_obj.hpp"
-#include "utils.hpp"
-
-void print_mat(unsigned char **input, size_t height, size_t width)
-{
-    for (size_t i = 0; i < height; i++)
-    {
-        auto line = input[i];
-        for (size_t j = 0; j < width; j++)
-        {
-            std::cout << (int)line[j];
-        }
-        std::cout << '\n';
-    }
-}
 
 /*
 Verify if the kernel is included in the image at the position (i, j)
 */
-int product(unsigned char **input, unsigned char **kernel, int i, int j,
-            size_t kernel_size, bool dilation)
+
+int product(struct ImageMat *input, struct MorphologicalKernel *kernel, int i, int j, bool dilation)
 {
     int res = 0;
 
-    int cst_size = (kernel_size - 1) / 2;
-    for (size_t k = 0; k < kernel_size; k++)
+    int cst_size = (kernel->size - 1) / 2;
+    for (int k = 0; k < kernel->size; k++)
     {
-        for (size_t l = 0; l < kernel_size; l++)
+        if ((k + i - cst_size < 0) || (k + i - cst_size >= input->height))
+            continue;
+
+        for (int l = 0; l < kernel->size; l++)
         {
-            if (kernel[k][l] == 0)
+            if ((kernel->kernel[k][l] == 0) || (l + j - cst_size < 0) || (l + j - cst_size >= input->width))
                 continue;
 
-            auto mul = input[k + i - cst_size][l + j - cst_size] * kernel[k][l];
+            const auto mul = input->pixel[k + i - cst_size][l + j - cst_size] * kernel->kernel[k][l];
 
-            if (mul > res && dilation)
+            if (dilation && mul > res)
                 res = mul;
             
             if (!dilation && (res == 0 || mul < res))
@@ -46,70 +34,22 @@ int product(unsigned char **input, unsigned char **kernel, int i, int j,
     return res;
 }
 
-/*
-Compute the morphological opening of the image
-*/
-unsigned char **perform_dilation(unsigned char **input, unsigned char **kernel,
-                                 size_t height, size_t width, size_t kernel_size)
+void perform_dilation(struct ImageMat *input, struct ImageMat *temp, struct MorphologicalKernel *kernel)
 {
-    auto output = create_array2D<unsigned char>(height, width, 0);
-    int cst_size = (kernel_size - 1) / 2;
-    for (size_t i = cst_size; i < height - cst_size; i++)
-    {
-        for (size_t j = cst_size; j < width - cst_size; j++)
-        {
-            output[i][j] = product(input, kernel, i, j, kernel_size, true);
-        }
-    }
-    return output;
+    for (int i = 0; i < input->height; i++)
+        for (int j = 0; j < input->width; j++)
+            temp->pixel[i][j] = product(input, kernel, i, j, true);
+    
+    swap_matrix(input, temp);
 }
 
-unsigned char **perform_erosion(unsigned char **input, unsigned char **kernel,
-                                size_t height, size_t width, size_t kernel_size)
+void perform_erosion(struct ImageMat *input, struct ImageMat *temp, struct MorphologicalKernel *kernel)
 {
-    auto output = create_array2D<unsigned char>(height, width, 0);
-    int cst_size = (kernel_size - 1) / 2;
-    for (size_t i = cst_size; i < height - cst_size; i++)
-    {
-        for (size_t j = cst_size; j < width - cst_size; j++)
-        {
-            output[i][j] = product(input, kernel, i, j, kernel_size, false); 
-        }
-    }
-    return output;
+    for (int i = 0; i < input->height; i++)
+        for (int j = 0; j < input->width; j++)
+            temp->pixel[i][j] = product(input, kernel, i, j, false); 
+
+    swap_matrix(input, temp);
 }
 
-unsigned char **perform_opening(unsigned char **input, unsigned char **kernel,
-                                size_t height, size_t width, size_t kernel_size) {
-    auto opening_dil = perform_dilation(input, kernel, height, width, kernel_size);
-    auto opening_ero = perform_erosion(opening_dil, kernel, height, width, kernel_size);
 
-    free2Dmatrix(height, opening_dil);
-    return opening_ero;
-}
-
-unsigned char **perform_closing(unsigned char **input, unsigned char **kernel,
-                                size_t height, size_t width, size_t kernel_size) {
-    auto closing_ero = perform_erosion(input, kernel, height, width, kernel_size);
-    auto closing_dil = perform_dilation(closing_ero, kernel, height, width, kernel_size);
-
-    free2Dmatrix(height, closing_ero);
-    return closing_dil;
-}
-
-// kernel_size must be odd
-unsigned char **circular_kernel(int kernel_size)
-{
-    auto kernel = create_array2D<unsigned char>(kernel_size, kernel_size, 0);
-    int radius = kernel_size / 2;
-    for (int x = -radius; x < radius + 1; x++)
-    {
-        int y = (std::sqrt(radius * radius - (x * x)));
-        for (int j = -y; j < y + 1; j++)
-        {
-            kernel[j + radius][x + radius] = 1;
-            kernel[-j + radius][x + radius] = 1;
-        }
-    }
-    return kernel;
-}

@@ -5,31 +5,22 @@
 
 
 // Luminosity Method: gray scale -> 0.3 * R + 0.59 * G + 0.11 * B;
-unsigned char **to_gray_scale(unsigned char *buffer, int width, int height, int channels) {
-    unsigned char **gray_scale = create2Dmatrix<unsigned char>(height, width);
-    
+void to_gray_scale(unsigned char *src, struct ImageMat *dst, int width, int height, int channels) {
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
-            gray_scale[r][c] = (0.30 * buffer[(r * width + c) * channels] +       // R
-                                0.59 * buffer[(r * width + c) * channels + 1] +   // G
-                                0.11 * buffer[(r * width + c) * channels + 2]);   // B
+            dst->pixel[r][c] = (0.30 * src[(r * width + c) * channels] +       // R
+                                0.59 * src[(r * width + c) * channels + 1] +   // G
+                                0.11 * src[(r * width + c) * channels + 2]);   // B
         }
     }
-
-    return gray_scale;
 }
 
 // Perform |gray_ref - gray_obj|
-unsigned char **difference(unsigned char **gray_ref, unsigned char **gray_obj, int width, int height) {
-    unsigned char **diff = create2Dmatrix<unsigned char>(height, width);
-
-    for (int r = 0; r < height; r++)
-        for (int c = 0; c < width; c++)
-            diff[r][c] = abs(gray_ref[r][c] - gray_obj[r][c]);
-
-    return diff;
+void difference(struct ImageMat *ref, struct ImageMat* obj) {
+    for (int r = 0; r < ref->height; r++)
+        for (int c = 0; c < ref->width; c++)
+            obj->pixel[r][c] = abs(ref->pixel[r][c] - obj->pixel[r][c]);
 }
-
 
 unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
     std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
@@ -42,50 +33,58 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     std::string file_save_closing = "../images/closing.jpg";
     std::string file_save_opening = "../images/opening.jpg";
-    
-    // Gray Scale 
-    unsigned char **gray_ref = to_gray_scale(buffer_ref, width, height, channels);
-    unsigned char **gray_obj = to_gray_scale(buffer_obj, width, height, channels);
 
-    save_image(gray_ref, width, height, file_save_gray_ref);
-    save_image(gray_obj, width, height, file_save_gray_obj);
+    // Create 2D ref and obj matrix and 2D temp matrix
+
+    struct ImageMat *ref_image = new_matrix(height, width);
+    struct ImageMat *obj_image = new_matrix(height, width);
+    struct ImageMat *temp_image = new_matrix(height, width);
+
+    // Gray Scale 
+    to_gray_scale(buffer_ref, ref_image, width, height, channels);
+    to_gray_scale(buffer_obj, obj_image, width, height, channels);
+
+    save_image(ref_image->pixel, width, height, file_save_gray_ref);
+    save_image(obj_image->pixel, width, height, file_save_gray_obj);
 
     // Blurring
-    unsigned char kernel_size = 5;
+    struct GaussianKernel* g_kernel = create_gaussian_kernel(5);
     
-    unsigned char **blurred_ref = apply_blurring(gray_ref, width, height, kernel_size); 
-    unsigned char **blurred_obj = apply_blurring(gray_obj, width, height, kernel_size); 
+    apply_blurring(ref_image, temp_image, g_kernel);
+    apply_blurring(obj_image, temp_image, g_kernel);
+
+    save_image(ref_image->pixel, width, height, file_save_blurred_ref);
+    save_image(obj_image->pixel, width, height, file_save_blurred_obj);
+
+    //Difference change obj
+    difference(ref_image, obj_image);
     
-    save_image(blurred_ref, width, height, file_save_blurred_ref);
-    save_image(blurred_obj, width, height, file_save_blurred_obj);
+    save_image(obj_image->pixel, width, height, diff_image);
 
-    //Difference
-    unsigned char **diff = difference(blurred_ref, blurred_obj, width, height);
-    
-    save_image(diff, width, height, diff_image);
-
-    // Perform closing/opening
-    int es_size = 5;
-    int es_size2 = 11;
-    unsigned char** k1 = circular_kernel(es_size);
-    unsigned char** k2 = circular_kernel(es_size2);
-
+    struct MorphologicalKernel* k1 = circular_kernel(5);
+    struct MorphologicalKernel* k2 = circular_kernel(11);
+   
     // Perform closing
-    auto closing = perform_closing(diff, k1, height, width, es_size);
-    save_image(closing, width, height, file_save_closing);
-
+    perform_erosion(obj_image, temp_image, k1);
+    perform_dilation(obj_image, temp_image, k1);
+    
+    save_image(obj_image->pixel, width, height, file_save_closing);
+   
     // Perform opening
-    auto opening = perform_opening(closing, k2, height, width, es_size2);
-    save_image(opening, width, height, file_save_opening);
+    perform_dilation(obj_image, temp_image, k2);
+    perform_erosion(obj_image, temp_image, k2);
 
-    free2Dmatrix(height, gray_ref);
-    free2Dmatrix(height, gray_obj);
-    free2Dmatrix(height, blurred_ref);
-    free2Dmatrix(height, blurred_obj);
-    free2Dmatrix(height, diff);
-    free2Dmatrix(height, closing);
-    free2Dmatrix(es_size, k1);
-    free2Dmatrix(es_size2, k2);
+    save_image(obj_image->pixel, width, height, file_save_opening);
 
-    return opening;
+    // TODO:
+    // - Add Threshold
+    // - BBox
+
+    freeImageMat(ref_image);
+    freeImageMat(temp_image);
+    freeGaussianKernel(g_kernel);
+    freeMorphologicalKernel(k1);
+    freeMorphologicalKernel(k2);
+
+    return obj_image->pixel;
 }
