@@ -86,7 +86,7 @@ float otsu_criteria(unsigned char** image,
         return inf;
 
     // Freeing variables
-    free(thresholded_image);
+    free2Dmatrix(height, thresholded_image);
     free(white_pixels);
     free(black_pixels);
 
@@ -302,8 +302,8 @@ unsigned char** compute_threshold(unsigned char** image, int width, int height)
         connexe_components(otsu_threshold1, thresholded_image, width, height);
 
     // Free
-    free(otsu_threshold1);
-    free(thresholded_image);
+    free2Dmatrix(height, otsu_threshold1);
+    free2Dmatrix(height, thresholded_image);
 
     // return thresholded_image;
     return connexe_component;
