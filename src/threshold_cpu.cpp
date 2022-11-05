@@ -197,7 +197,8 @@ void compute_otsu_threshold(unsigned char** in_image,
     unsigned char otsu_threshold2 = otsu_threshold * 2.5;
 
     // First threshold saved to out_image_1
-    apply_base_threshold(in_image, out_image_1, otsu_threshold, width, height);
+    apply_base_threshold(in_image, out_image_1, otsu_threshold - 10, width,
+                         height);
 
     // Second threshold saved to out_image_2
     apply_bin_threshold(out_image_1, out_image_2, otsu_threshold2, width,
