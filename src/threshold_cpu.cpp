@@ -195,6 +195,26 @@ void compute_otsu_threshold(struct ImageMat* in_image,
     /*        otsu_threshold2); */
 }
 
+unsigned char compute_otsu_threshold2(struct ImageMat* in_image, struct ImageMat* temp)
+{
+    // TODO: Get two images for the connexe components
+    // TODO: But that's after we do a full initial cleanup!
+
+    unsigned char otsu_threshold = get_otsu_threshold(in_image);
+    unsigned char otsu_threshold2 = otsu_threshold * 2.5;
+
+    // First threshold saved to out_image_1
+    apply_base_threshold(in_image, otsu_threshold - 10);
+
+    // Second threshold saved to out_image_2
+    apply_bin_threshold(in_image, temp, otsu_threshold2);
+
+    return otsu_threshold2;
+
+    /* printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold, */
+    /*        otsu_threshold2); */
+}
+
 char check_neighbours(struct ImageMat* in_otsu_2,
                       struct ImageMat* in_otsu_1,
                       int x,
@@ -241,20 +261,51 @@ char propagate(struct ImageMat* in_otsu_2,
     return changed;
 }
 
-void connexe_components(struct ImageMat* in_otsu_1,
-                        struct ImageMat* in_otsu_2)
-{
-    char l_changed = 1;
-    while (l_changed) {
-        l_changed = propagate(in_otsu_2, in_otsu_1);
+/* void connexe_components(struct ImageMat* in_otsu_1, */
+/*                         struct ImageMat* in_otsu_2) */
+/* { */
+/*     char l_changed = 1; */
+/*     while (l_changed) { */
+/*         l_changed = propagate(in_otsu_2, in_otsu_1); */
+/*     } */
+/* } */
+
+void components(struct ImageMat* img, struct ImageMat* temp, int x, int y, int val) {
+    if (x < 0 || x >= img->height || y < 0 || y >= img->width || img->pixel[x][y] % 255 == 0)
+        return;
+
+    temp->pixel[x][y] = val;
+    img->pixel[x][y] = 255;
+    components(img, temp, x + 1, y, val);
+    components(img, temp, x - 1, y, val);
+    components(img, temp, x, y + 1, val);
+    components(img, temp, x, y - 1, val);
+}
+
+int connexe_components(struct ImageMat *img_1, struct ImageMat* temp) {
+    int number = 20;
+    for (int i = 0; i < img_1->height; i++) {
+        for (int j = 0; j < img_1->width; j++) {
+            if (temp->pixel[i][j] == 255) {
+                img_1->pixel[i][j] = 1;
+                components(img_1, temp, i, j, number);
+                number++;
+            }
+        }
     }
+
+    return number - 1;
 }
 
 void compute_threshold(struct ImageMat* base_image,
                        struct ImageMat* temp_image)
 {
-    compute_otsu_threshold(base_image, temp_image);
-    connexe_components(base_image, temp_image);
+    /* compute_otsu_threshold(base_image, temp_image); */
+    unsigned char th = compute_otsu_threshold2(base_image, temp_image);
+    std::cout << (int)th << '\n';
+    int nb_compo = connexe_components(base_image, temp_image);
+    std::cout << (int)nb_compo << '\n';
+    /* connexe_components(base_image, temp_image); */
 
     swap_matrix(base_image, temp_image);
 }
