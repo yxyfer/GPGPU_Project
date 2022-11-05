@@ -99,7 +99,7 @@ void BM_threshold(benchmark::State& st) {
 
 void BM_Rendering_cpu(benchmark::State& st)
 {
-    int width, height, channels;
+    int width, height, channels, nb_obj;
     std::string ref_image_path = "../images/base.png";
     std::string obj_image_path = "../images/obj.png";
 
@@ -107,7 +107,7 @@ void BM_Rendering_cpu(benchmark::State& st)
     unsigned char *obj_image = load_image(const_cast<char *>(obj_image_path.c_str()), &width, &height, &channels);
 
     for (auto _ : st)
-        detect_cpu(ref_image, obj_image, width, height, channels);
+        detect_cpu(ref_image, obj_image, width, height, channels, &nb_obj);
 
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }

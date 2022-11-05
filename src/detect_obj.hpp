@@ -18,6 +18,13 @@ struct MorphologicalKernel {
     int size;
 };
 
+struct Bbox {
+    int x;
+    int y;
+    int height;
+    int width;
+};
+
 ///// FILE: struct_utils.cpp
 struct ImageMat *new_matrix(int height, int width);
 
@@ -45,11 +52,12 @@ void freeMorphologicalKernel(struct MorphologicalKernel *kernel);
 /// \param width: Image width
 /// \param height: Image height
 /// \param channels: Image number of channels
-unsigned char** detect_cpu(unsigned char* buffer_ref,
+struct Bbox** detect_cpu(unsigned char* buffer_ref,
                            unsigned char* buffer_obj,
                            int width,
                            int height,
-                           int channels);
+                           int channels,
+                           int* nb_obj);
 
 // FILE: detect_obj_cpu.cpp
 /// \param src: The RGBA24 image buffer
@@ -101,7 +109,10 @@ void perform_erosion(struct ImageMat* input,
 // FILE: threshold_cpu.cpp
 /// \param image: The struct image
 /// \param temp: A temp struct image
-void compute_threshold(struct ImageMat* image, struct ImageMat* temp);
+int compute_threshold(struct ImageMat* image, struct ImageMat* temp);
+
+
+struct Bbox** get_bbox(struct ImageMat *image, int nb_compo);
 
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer

@@ -22,7 +22,8 @@ void difference(struct ImageMat *ref, struct ImageMat* obj) {
             obj->pixel[r][c] = abs(ref->pixel[r][c] - obj->pixel[r][c]);
 }
 
-unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width, int height, int channels) {
+struct Bbox **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
+                           int width, int height, int channels, int *nb_obj) {
     std::string file_save_gray_ref = "../images/gray_scale_ref.jpg";
     std::string file_save_gray_obj = "../images/gray_scale_obj.jpg";
     
@@ -78,17 +79,18 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
 
     save_image(obj_image->pixel, width, height, file_save_opening);
 
-    // TODO:
-    // - Add Threshold
-    // - BBox
-    compute_threshold(obj_image, temp_image);
+    int nb_components = compute_threshold(obj_image, temp_image);
     save_image(obj_image->pixel, width, height, file_save_threshold_base);
+
+    struct Bbox** bboxes = get_bbox(obj_image, nb_components);
+    *nb_obj = nb_components;
 
     freeImageMat(ref_image);
     freeImageMat(temp_image);
+    freeImageMat(obj_image);
     freeGaussianKernel(g_kernel);
     freeMorphologicalKernel(k1);
     freeMorphologicalKernel(k2);
 
-    return obj_image->pixel;
+    return bboxes;
 }
