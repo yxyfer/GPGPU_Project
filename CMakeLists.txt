@@ -40,7 +40,7 @@ target_sources(blurring_cpu PRIVATE src/detect_obj.hpp src/blur_cpu.cpp)
 
 add_library(openclose_cpu)
 target_compile_features(openclose_cpu PUBLIC cxx_std_14)
-target_sources(openclose_cpu PRIVATE src/detect_obj.hpp src/opening.cpp)
+target_sources(openclose_cpu PRIVATE src/detect_obj.hpp src/opening_cpu.cpp)
 
 add_library(threshold_cpu)
 target_compile_features(threshold_cpu PUBLIC cxx_std_14)
@@ -58,6 +58,11 @@ target_compile_features(detector_gpu PUBLIC cxx_std_14)
 target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage)
 target_sources(detector_gpu PRIVATE src/detect_obj.hpp src/detect_obj_gpu.cu)
 set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+add_library(openclose_gpu)
+target_compile_features(openclose_gpu PUBLIC cxx_std_14)
+target_sources(openclose_gpu PRIVATE src/detect_obj.hpp src/opening_gpu.cu)
+set_target_properties(openclose_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 
 ##### MAIN
