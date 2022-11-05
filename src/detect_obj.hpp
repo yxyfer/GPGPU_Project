@@ -98,7 +98,8 @@ void perform_erosion(struct ImageMat* input,
                      struct MorphologicalKernel* kernel);
 
 
-unsigned char** compute_threshold(unsigned char** image, int width, int height);
+/* unsigned char** compute_threshold(unsigned char** image, int width, int height); */
+void compute_threshold(struct ImageMat* image, struct ImageMat* temp);
 
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer

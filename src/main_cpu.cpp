@@ -22,15 +22,7 @@ int main(int argc, char** argv)
     int width, height, channels;
     unsigned char **images = get_images(argc, argv, &width, &height, &channels);
 
-    // Get opening
-    unsigned char** opening = detect_cpu(images[0], images[1], width, height, channels);
-    
-    std::string file_save_threshold_base = "../images/threshold_base.jpg";
-    
-    // Perform threshold
-    // output = apply_thresholding(output, 15, width, height);
-    auto thresh_img = compute_threshold(opening, width, height);
-    save_image(thresh_img, width, height, file_save_threshold_base);
+    unsigned char** output = detect_cpu(images[0], images[1], width, height, channels);
 
     free_images(images, argc - 1);
 }

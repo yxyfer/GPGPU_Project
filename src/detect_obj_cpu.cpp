@@ -33,6 +33,8 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     
     std::string file_save_closing = "../images/closing.jpg";
     std::string file_save_opening = "../images/opening.jpg";
+    
+    std::string file_save_threshold_base = "../images/threshold_base.jpg";
 
     // Create 2D ref and obj matrix and 2D temp matrix
 
@@ -79,6 +81,8 @@ unsigned char **detect_cpu(unsigned char *buffer_ref, unsigned char *buffer_obj,
     // TODO:
     // - Add Threshold
     // - BBox
+    compute_threshold(obj_image, temp_image);
+    save_image(obj_image->pixel, width, height, file_save_threshold_base);
 
     freeImageMat(ref_image);
     freeImageMat(temp_image);

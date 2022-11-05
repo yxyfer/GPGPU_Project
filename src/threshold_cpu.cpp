@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "utils.hpp"
+#include "detect_obj.hpp"
 
 float inf = std::numeric_limits<float>::infinity();
 
@@ -25,20 +26,18 @@ float var(unsigned char* array, int nb_pixels)
     return variance;
 }
 
-float otsu_criteria(unsigned char** image,
-                    unsigned char threshold,
-                    int width,
-                    int height)
+float otsu_criteria(struct ImageMat* image,
+                    unsigned char threshold)
 {
     unsigned char** thresholded_image =
-        create2Dmatrix<unsigned char>(height, width);
+        create2Dmatrix<unsigned char>(image->height, image->width);
 
-    unsigned int nb_pixels = width * height;
+    unsigned int nb_pixels = image->width * image->height;
     unsigned int nb_whitep = 0;
 
-    for (int x = 0; x < height; ++x)
-        for (int y = 0; y < width; ++y) {
-            if (image[x][y] >= threshold) {
+    for (int x = 0; x < image->height; ++x)
+        for (int y = 0; y < image->width; ++y) {
+            if (image->pixel[x][y] >= threshold) {
                 thresholded_image[x][y] = 1;
                 nb_whitep++;
             }
@@ -55,14 +54,14 @@ float otsu_criteria(unsigned char** image,
     unsigned int wp_i = 0;
     unsigned int bp_i = 0;
 
-    for (int x = 0; x < height; ++x)
-        for (int y = 0; y < width; ++y) {
+    for (int x = 0; x < image->height; ++x)
+        for (int y = 0; y < image->width; ++y) {
             if (thresholded_image[x][y] == 1) {
-                white_pixels[wp_i] = image[x][y];
+                white_pixels[wp_i] = image->pixel[x][y];
                 wp_i++;
             }
             else {
-                black_pixels[bp_i] = image[x][y];
+                black_pixels[bp_i] = image->pixel[x][y];
                 bp_i++;
             }
         }
@@ -86,7 +85,7 @@ float otsu_criteria(unsigned char** image,
         return inf;
 
     // Freeing variables
-    free2Dmatrix(height, thresholded_image);
+    free2Dmatrix(image->height, thresholded_image);
     free(white_pixels);
     free(black_pixels);
 
@@ -119,23 +118,21 @@ int get_min_index(float* array, int size)
     return min;
 }
 
-int get_max_pixel_val(unsigned char** in_image, int array_size)
+int get_max_pixel_val(struct ImageMat* in_image)
 {
     // Getting max values in image
-    unsigned char max_pixel_vals[array_size];
-    for (int x = 0; x < array_size; ++x)
-        max_pixel_vals[x] = get_max(in_image[x], array_size);
-    int max_pixel_val = get_max(max_pixel_vals, array_size);
+    unsigned char max_pixel_vals[in_image->height];
+    for (int x = 0; x < in_image->height; ++x)
+        max_pixel_vals[x] = get_max(in_image->pixel[x], in_image->height);
+    int max_pixel_val = get_max(max_pixel_vals, in_image->height);
 
     return max_pixel_val;
 }
 
-unsigned char get_otsu_threshold(unsigned char** in_image,
-                                 int width,
-                                 int height)
+unsigned char get_otsu_threshold(struct ImageMat* in_image)
 {
     // getting max image pixel value
-    int max_pixel_val = get_max_pixel_val(in_image, height);
+    int max_pixel_val = get_max_pixel_val(in_image);
 
     int range_size = max_pixel_val + 1;
     unsigned char threshold_range[range_size];
@@ -145,7 +142,7 @@ unsigned char get_otsu_threshold(unsigned char** in_image,
     float otsu_vals[range_size];
     for (int i = 0; i < range_size; ++i) {
         unsigned char curr_threshold = threshold_range[i];
-        otsu_vals[i] = otsu_criteria(in_image, curr_threshold, width, height);
+        otsu_vals[i] = otsu_criteria(in_image, curr_threshold);
     }
 
     int threshold_index = get_min_index(otsu_vals, range_size);
@@ -154,96 +151,88 @@ unsigned char get_otsu_threshold(unsigned char** in_image,
     return otsu_threshold;
 }
 
-void apply_base_threshold(unsigned char** image,
-                          unsigned char threshold,
-                          int width,
-                          int height)
+void apply_base_threshold(struct ImageMat* image,
+                          unsigned char threshold)
 {
-    for (int x = 0; x < height; ++x)
-        for (int y = 0; y < width; ++y) {
-            if (image[x][y] >= threshold)
+    for (int x = 0; x < image->height; ++x)
+        for (int y = 0; y < image->width; ++y) {
+            if (image->pixel[x][y] >= threshold)
                 continue;
             else
-                image[x][y] = 0;
+                image->pixel[x][y] = 0;
         }
 }
 
-void apply_bin_threshold(unsigned char** in_image,
-                         unsigned char** out_image,
-                         unsigned char threshold,
-                         int width,
-                         int height)
+void apply_bin_threshold(struct ImageMat* in_image,
+                         struct ImageMat* out_image,
+                         unsigned char threshold)
 {
-    for (int x = 0; x < height; ++x)
-        for (int y = 0; y < width; ++y) {
-            if (in_image[x][y] >= threshold)
-                out_image[x][y] = 255;
+    for (int x = 0; x < in_image->height; ++x)
+        for (int y = 0; y < in_image->width; ++y) {
+            if (in_image->pixel[x][y] >= threshold)
+                out_image->pixel[x][y] = 255;
             else
-                out_image[x][y] = 0;
+                out_image->pixel[x][y] = 0;
         }
 }
 
-void compute_otsu_threshold(unsigned char** in_image,
-                            unsigned char**& out_image_2,
-                            int width,
-                            int height)
+void compute_otsu_threshold(struct ImageMat* in_image,
+                            struct ImageMat* out_image_2)
 {
     // TODO: Get two images for the connexe components
     // TODO: But that's after we do a full initial cleanup!
 
-    unsigned char otsu_threshold = get_otsu_threshold(in_image, width, height);
+    unsigned char otsu_threshold = get_otsu_threshold(in_image);
     unsigned char otsu_threshold2 = otsu_threshold * 2.5;
 
     // First threshold saved to out_image_1
-    apply_base_threshold(in_image, otsu_threshold - 10, width, height);
+    apply_base_threshold(in_image, otsu_threshold - 10);
 
     // Second threshold saved to out_image_2
-    apply_bin_threshold(in_image, out_image_2, otsu_threshold2, width, height);
+    apply_bin_threshold(in_image, out_image_2, otsu_threshold2);
 
     printf("otsu threshold 1 = %i; threshold 2 = %i\n", otsu_threshold,
            otsu_threshold2);
 }
 
-char check_neighbours(unsigned char** L,
-                      unsigned char** in_otsu_1,
+char check_neighbours(struct ImageMat* L,
+                      struct ImageMat* in_otsu_1,
                       int x,
                       int y)
 {
-    unsigned char final_val = L[x][y];
+    unsigned char final_val = L->pixel[x][y];
 
-    if (in_otsu_1[x - 1][y] > final_val && L[x - 1][y] != 0)
+    if (in_otsu_1->pixel[x - 1][y] > final_val && L->pixel[x - 1][y] != 0)
         // final_val = in_otsu_1[x - 1][y];
         final_val = 255;
-    if (in_otsu_1[x + 1][y] > final_val && L[x + 1][y] != 0)
+    if (in_otsu_1->pixel[x + 1][y] > final_val && L->pixel[x + 1][y] != 0)
         // final_val = in_otsu_1[x + 1][y];
         final_val = 255;
-    if (in_otsu_1[x][y - 1] > final_val && L[x][y - 1] != 0)
+    if (in_otsu_1->pixel[x][y - 1] > final_val && L->pixel[x][y - 1] != 0)
         // final_val = in_otsu_1[x][y - 1];
         final_val = 255;
-    if (in_otsu_1[x][y + 1] > final_val && L[x][y + 1] != 0)
+    if (in_otsu_1->pixel[x][y + 1] > final_val && L->pixel[x][y + 1] != 0)
         // final_val = in_otsu_1[x][y + 1];
         final_val = 255;
 
     // TODO: CHECK IF WE NEED DIAGONALS?
 
     char changed = 0;
-    if (final_val != L[x][y])
+    if (final_val != L->pixel[x][y])
         changed = 1;
 
-    L[x][y] = final_val;
+    L->pixel[x][y] = final_val;
     return changed;
 }
 
 // TODO: TAKE CARE OF CORNERS
-char propagate(unsigned char**& L,
-               unsigned char** in_otsu_1,
-               int width,
-               int height)
+char propagate(struct ImageMat* L,
+               struct ImageMat* in_otsu_1)
 {
     char changed = 0;
 
-    for (int i = 1; i < height - 1; ++i)
-        for (int j = 1; j < width - 1; ++j) {
+    for (int i = 1; i < L->height - 1; ++i)
+        for (int j = 1; j < L->width - 1; ++j) {
             char has_changed = check_neighbours(L, in_otsu_1, i, j);
             if (has_changed)
                 changed = 1;
@@ -252,27 +241,25 @@ char propagate(unsigned char**& L,
     return changed;
 }
 
-void connexe_components(unsigned char** in_otsu_1,
-                        unsigned char** in_otsu_2,
-                        int width,
-                        int height)
+void connexe_components(struct ImageMat* in_otsu_1,
+                        struct ImageMat* in_otsu_2)
 {
     char l_changed = 1;
     while (l_changed) {
-        l_changed = propagate(in_otsu_2, in_otsu_1, width, height);
+        l_changed = propagate(in_otsu_2, in_otsu_1);
     }
 }
 
-unsigned char** compute_threshold(unsigned char** threshold_image_1,
-                                  int width,
-                                  int height)
+void compute_threshold(struct ImageMat* threshold_image_1,
+                       struct ImageMat* threshold_image_2)
 {
-    unsigned char** threshold_image_2 =
-        create2Dmatrix<unsigned char>(height, width);
+    /* unsigned char** threshold_image_2 = */
+    /*     create2Dmatrix<unsigned char>(height, width); */
 
-    compute_otsu_threshold(threshold_image_1, threshold_image_2, width, height);
-    connexe_components(threshold_image_1, threshold_image_2, width, height);
+    compute_otsu_threshold(threshold_image_1, threshold_image_2);
+    connexe_components(threshold_image_1, threshold_image_2);
 
     // TODO: FREE IN MAIN !
-    return threshold_image_2;
+    swap_matrix(threshold_image_1, threshold_image_2);
+    /* return threshold_image_2; */
 }
