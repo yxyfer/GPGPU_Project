@@ -204,17 +204,6 @@ void compute_otsu_threshold(unsigned char** in_image,
            otsu_threshold2);
 }
 
-void init_connexe_components(unsigned char** L,
-                             unsigned char** in_otsu_2,
-                             int width,
-                             int height)
-{
-    for (int i = 0; i < height; ++i)
-        for (int j = 0; j < width; ++j) {
-            L[i][j] = in_otsu_2[i][j];
-        }
-}
-
 char check_neighbours(unsigned char** L,
                       unsigned char** in_otsu_1,
                       int x,
@@ -263,21 +252,15 @@ char propagate(unsigned char**& L,
     return changed;
 }
 
-unsigned char** connexe_components(unsigned char** in_otsu_1,
-                                   unsigned char** in_otsu_2,
-                                   int width,
-                                   int height)
+void connexe_components(unsigned char** in_otsu_1,
+                        unsigned char** in_otsu_2,
+                        int width,
+                        int height)
 {
-    unsigned char** L = create2Dmatrix<unsigned char>(height, width);
-
-    init_connexe_components(L, in_otsu_2, width, height);
-
     char l_changed = 1;
     while (l_changed) {
-        l_changed = propagate(L, in_otsu_1, width, height);
+        l_changed = propagate(in_otsu_2, in_otsu_1, width, height);
     }
-
-    return L;
 }
 
 unsigned char** compute_threshold(unsigned char** threshold_image_1,
@@ -288,12 +271,8 @@ unsigned char** compute_threshold(unsigned char** threshold_image_1,
         create2Dmatrix<unsigned char>(height, width);
 
     compute_otsu_threshold(threshold_image_1, threshold_image_2, width, height);
+    connexe_components(threshold_image_1, threshold_image_2, width, height);
 
-    unsigned char** connexe_component =
-        connexe_components(threshold_image_1, threshold_image_2, width, height);
-
-    // Free
-    free2Dmatrix(height, threshold_image_2);
-
-    return connexe_component;
+    // TODO: FREE IN MAIN !
+    return threshold_image_2;
 }
