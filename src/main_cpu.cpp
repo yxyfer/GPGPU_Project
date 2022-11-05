@@ -41,8 +41,6 @@ int main(int argc, char** argv)
 
     struct Bbox*** all_boxes = main_detection(images, argc - 1, width, height, channels, nb_objs);
 
-    /* struct Bbox** bboxes = detect_cpu(images[0], images[1], width, height, channels, &nb_obj); */
-
     std::cout << "{\n";
     for (int i = 0; i < argc - 2; i++) {
         format_bbox(all_boxes[i], nb_objs[i], argv[i + 2], i == (argc - 3));
