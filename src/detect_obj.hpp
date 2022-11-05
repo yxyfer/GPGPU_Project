@@ -59,6 +59,13 @@ struct Bbox** detect_cpu(unsigned char* buffer_ref,
                            int channels,
                            int* nb_obj);
 
+struct Bbox ***main_detection(unsigned char **images,
+                              int length,
+                              int width,
+                              int height,
+                              int channels,
+                              int *nb_objs);
+
 // FILE: detect_obj_cpu.cpp
 /// \param src: The RGBA24 image buffer
 /// \param dst: The struct image to store the information
@@ -112,6 +119,9 @@ void perform_erosion(struct ImageMat* input,
 int compute_threshold(struct ImageMat* image, struct ImageMat* temp);
 
 
+// FILE: bbox.cpp
+/// \param image: The struct image
+/// \param nb_compo: Number of components
 struct Bbox** get_bbox(struct ImageMat *image, int nb_compo);
 
 /// \param buffer_ref The RGBA24 image buffer
