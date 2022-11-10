@@ -154,15 +154,16 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 
     // Uncomment to see the images
     to_save(gray_ref_cuda, rows, cols, file_save_gray_ref, pitch);
-    /* to_save(gray_obj_cuda, height, width, file_save_gray_obj); */
+    to_save(gray_obj_cuda, height, width, file_save_gray_obj);
 
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
 
     // Difference
-    difference<<<threadsPerBlock, blocksPerGrid>>>(gray_ref_cuda, gray_obj_cuda,
-                                                   rows, cols, pitch);
+    // difference<<<blocksPerGrid, threadsPerBlock>>>(gray_ref_cuda,
+    // gray_obj_cuda,
+    //                                               rows, cols, pitch);
 
     // Uncomment to see the results
-    to_save(gray_obj_cuda, height, width, file_save_diff, pitch);
+    // to_save(gray_obj_cuda, height, width, file_save_diff, pitch);
 }
