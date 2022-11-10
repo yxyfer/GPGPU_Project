@@ -1,8 +1,10 @@
 #include <cassert>
+#include <cmath>
 #include <iostream>
 
 #include "detect_obj.hpp"
 #include "helpers_images.hpp"
+#include "utils.hpp"
 
 #define cudaCheckError()                                                       \
     {                                                                          \
@@ -26,6 +28,73 @@ void to_save(unsigned char *buffer_cuda, int rows, int cols, std::string file,
 
     save(host_buffer, cols, rows, file);
     free(host_buffer);
+}
+
+// (1 / 2*pi*sigma^2) / e(-(x^2 + y^2)/2 * sigma^2)
+double **create_gaussian_kernel(unsigned char size)
+{
+    double **kernel = create2Dmatrix<double>(size, size);
+    int margin = (int)size / 2;
+    double sigma = 1.0;
+
+    double s = 2.0 * sigma * sigma;
+    // sum is for normalization
+    double sum = 0.0;
+
+    for (int row = -margin; row <= margin; row++)
+    {
+        for (int col = -margin; col <= margin; col++)
+        {
+            const double radius = col * col + row * row;
+            kernel[row + margin][col + margin] =
+                (exp(-radius / s)) / (M_PI * s);
+            sum += kernel[row + margin][col + margin];
+        }
+    }
+
+    // normalising the Kernel
+    for (unsigned char i = 0; i < size; ++i)
+        for (unsigned char j = 0; j < size; ++j)
+            kernel[i][j] /= sum;
+
+    return kernel;
+}
+
+__global__ void gaussian_blur(unsigned char *image, int rows, int cols,
+                              int kernel_size, double **kernel)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (i >= rows * cols)
+        return;
+
+    double conv = 0;
+    // get kernel val
+    int margin = (int)kernel_size / 2;
+    for (int j = -margin; j <= margin; j++)
+        for (int k = -margin; k <= margin; k++)
+        {
+            if (i + k < 0 || i + j * cols < 0 || i + k >= cols
+                || i + j * cols >= rows)
+                continue;
+            conv += image[i + k + (j * cols)] * kernel[j + margin][k + margin];
+        }
+
+    __syncthreads();
+
+    image[i] = conv;
+}
+
+void to_save(unsigned char *buffer_cuda, int height, int width,
+             std::string file)
+{
+    size_t size = width * height * sizeof(unsigned char);
+    unsigned char *b = (unsigned char *)std::malloc(size);
+
+    cudaMemcpy(b, buffer_cuda, size, cudaMemcpyDeviceToHost);
+
+    save(b, width, height, file);
+    free(b);
 }
 
 unsigned char *malloc_cuda(size_t size)
@@ -110,6 +179,10 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 {
     std::string file_save_gray_ref = "../images/gray_scale_ref_cuda.jpg";
     std::string file_save_gray_obj = "../images/gray_scale_obj_cuda.jpg";
+
+    std::string file_save_blur_ref = "../images/blurred_ref_cuda.jpg";
+    std::string file_save_blur_obj = "../images/blurred_obj_cuda.jpg";
+
     std::string file_save_diff = "../images/diff_cuda.jpg";
 
     const int rows = height;
@@ -159,6 +232,18 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
 
+    unsigned int kernel_size = 5;
+    double **kernel = create_gaussian_kernel(kernel_size);
+
+    gaussian_blur<<<blocks_per_grid, threads_per_bloks>>>(
+        gray_ref_cuda, rows, cols, kernel_size, kernel);
+    cudaCheckError();
+    gaussian_blur<<<blocks_per_grid, threads_per_bloks>>>(
+        gray_obj_cuda, rows, cols, kernel_size, kernel);
+    cudaCheckError();
+
+    to_save(gray_ref_cuda, height, width, file_save_blur_ref);
+    to_save(gray_obj_cuda, height, width, file_save_blur_obj);
     // Difference
     // difference<<<blocksPerGrid, threadsPerBlock>>>(gray_ref_cuda,
     // gray_obj_cuda,
