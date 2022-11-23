@@ -46,9 +46,13 @@ add_library(threshold_cpu)
 target_compile_features(threshold_cpu PUBLIC cxx_std_14)
 target_sources(threshold_cpu PRIVATE src/detect_obj.hpp src/threshold_cpu.cpp)
 
+add_library(bbox_cpu)
+target_compile_features(bbox_cpu PUBLIC cxx_std_14)
+target_sources(bbox_cpu PRIVATE src/detect_obj.hpp src/bbox.cpp)
+
 add_library(detector_cpu)
 target_compile_features(detector_cpu PUBLIC cxx_std_14)
-target_link_libraries(detector_cpu PRIVATE spdlog::spdlog utilsimage blurring_cpu openclose_cpu threshold_cpu)
+target_link_libraries(detector_cpu PRIVATE spdlog::spdlog utilsimage blurring_cpu openclose_cpu threshold_cpu bbox_cpu)
 target_sources(detector_cpu PRIVATE src/detect_obj.hpp src/detect_obj_cpu.cpp src/struct_utils.cpp)
 
 
