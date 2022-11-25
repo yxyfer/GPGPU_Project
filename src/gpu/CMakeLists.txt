@@ -5,4 +5,4 @@ target_sources(threshold_gpu PRIVATE
 threshold/threshold_gpu.cu
 threshold/otsu_gpu.cu
 )
-set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+# set_target_properties(threshold_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
