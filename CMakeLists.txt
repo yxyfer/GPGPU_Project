@@ -24,70 +24,63 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR} )
 find_package(TBB REQUIRED)
 find_package(benchmark REQUIRED)
 
-set(CMAKE_CUDA_ARCHITECTURES "75")
+#set(CMAKE_CUDA_ARCHITECTURES "75")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+
+include_directories(${PROJECT_SOURCE_DIR}/includes)
+
+add_subdirectory(src)
+
 add_library(utilsimage)
 target_compile_features(utilsimage PUBLIC cxx_std_14)
-target_sources(utilsimage PRIVATE src/stb_image.h src/stb_image_write.h src/helpers_images.hpp src/helpers_images.cpp)
+target_sources(utilsimage PRIVATE src/helpers_images.cpp)
 
 
 ##### CPU
-add_library(blurring_cpu)
-target_compile_features(blurring_cpu PUBLIC cxx_std_14)
-target_sources(blurring_cpu PRIVATE src/detect_obj.hpp src/blur_cpu.cpp)
-
-add_library(openclose_cpu)
-target_compile_features(openclose_cpu PUBLIC cxx_std_14)
-target_sources(openclose_cpu PRIVATE src/detect_obj.hpp src/opening.cpp)
-
-add_library(threshold_cpu)
-target_compile_features(threshold_cpu PUBLIC cxx_std_14)
-target_sources(threshold_cpu PRIVATE src/detect_obj.hpp src/threshold_cpu.cpp)
-
-add_library(bbox_cpu)
-target_compile_features(bbox_cpu PUBLIC cxx_std_14)
-target_sources(bbox_cpu PRIVATE src/detect_obj.hpp src/bbox.cpp)
 
 add_library(detector_cpu)
 target_compile_features(detector_cpu PUBLIC cxx_std_14)
 target_link_libraries(detector_cpu PRIVATE spdlog::spdlog utilsimage blurring_cpu openclose_cpu threshold_cpu bbox_cpu)
-target_sources(detector_cpu PRIVATE src/detect_obj.hpp src/detect_obj_cpu.cpp src/struct_utils.cpp)
-
+target_sources(detector_cpu PRIVATE src/cpu/detect_obj_cpu.cpp src/struct_utils.cpp)
 
 ##### GPU
+
 add_library(detector_gpu)
 target_compile_features(detector_gpu PUBLIC cxx_std_14)
 target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage)
-target_sources(detector_gpu PRIVATE src/detect_obj.hpp src/detect_obj_gpu.cu)
+target_sources(detector_gpu PRIVATE src/gpu/detect_obj_gpu.cu)
 set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-add_library(gpu_test_functions)
-target_compile_features(gpu_test_functions PUBLIC cxx_std_14)
-target_link_libraries(gpu_test_functions PRIVATE utilsimage)
-target_sources(gpu_test_functions PRIVATE src/test_gpu/gpu_functions.hpp src/test_gpu/gpu_functions.cu)
-set_target_properties(gpu_test_functions PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+# add_library(gpu_test_functions)
+# target_compile_features(gpu_test_functions PUBLIC cxx_std_14)
+# target_link_libraries(gpu_test_functions PRIVATE utilsimage)
+# target_sources(gpu_test_functions PRIVATE src/test_gpu/gpu_functions.hpp src/test_gpu/gpu_functions.cu)
+# set_target_properties(gpu_test_functions PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 
 ##### MAIN
-# add_executable(main src/mandel.cpp)
-# target_compile_features(main PUBLIC cxx_std_17)
-# target_link_libraries(main PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu detector_gpu utilsimage)
+# <<<<<<< HEAD
+# add_executable(main_gpu_test src/test_gpu/main_gpu_test.cpp)
+# target_compile_features(main_gpu_test PUBLIC cxx_std_17)
+# target_link_libraries(main_gpu_test PRIVATE gpu_test_functions)
 
-add_executable(main_gpu_test src/test_gpu/main_gpu_test.cpp)
-target_compile_features(main_gpu_test PUBLIC cxx_std_17)
-target_link_libraries(main_gpu_test PRIVATE gpu_test_functions)
+# add_executable(main_cpu src/main_cpu.cpp)
+# =======
 
-add_executable(main_cpu src/main_cpu.cpp)
+add_executable(main_cpu src/cpu/main_cpu.cpp)
 target_compile_features(main_cpu PUBLIC cxx_std_17)
-target_link_libraries(main_cpu PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu utilsimage)
+target_include_directories(main_cpu PRIVATE "includes")
+target_link_libraries(main_cpu CLI11::CLI11 spdlog::spdlog detector_cpu utilsimage)
 
-add_executable(main_gpu src/main_gpu.cpp)
+add_executable(main_gpu src/gpu/main_gpu.cpp)
 target_compile_features(main_gpu PUBLIC cxx_std_17)
-target_link_libraries(main_gpu PRIVATE CLI11::CLI11 spdlog::spdlog detector_gpu utilsimage)
+target_include_directories(main_gpu PRIVATE "includes")
+target_link_libraries(main_gpu CLI11::CLI11 spdlog::spdlog detector_gpu utilsimage)
 
 ##### BENCH
 add_executable(bench src/bench.cpp)
 target_compile_features(bench PUBLIC cxx_std_17)
-target_link_libraries(bench PRIVATE benchmark::benchmark detector_cpu utilsimage)
+target_include_directories(bench PRIVATE "includes")
+target_link_libraries(bench benchmark::benchmark detector_cpu utilsimage)

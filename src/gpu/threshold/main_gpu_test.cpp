@@ -1,5 +1,5 @@
-#include "gpu_functions.hpp"
-#include "../helpers_images.hpp"
+#include "threshold_gpu.hpp"
+#include "helpers_images.hpp"
 #include <iostream>
 
 

@@ -2,18 +2,18 @@
 #include <iostream>
 #include <memory>
 
-#include "detect_obj.hpp"
+#include "detect_obj_gpu.hpp"
 #include "helpers_images.hpp"
 
-
 // Usage: ./main_cpu
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
     std::cout << "Mode: GPU\n";
-    if (argc < 3) {
+    if (argc < 3)
+    {
         std::cout << "Minimum two images are needed\n";
         return 1;
     }

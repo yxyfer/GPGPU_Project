@@ -1,4 +1,4 @@
-#include "gpu_functions.hpp"
+#include "threshold_gpu.hpp"
 #include <cassert>
 #include <iostream>
 #include <math.h>
