@@ -20,3 +20,9 @@ threshold/connexe_components_cpu.cpp
 threshold/otsu_cpu.cpp
 )
 
+
+add_library(bbox_cpu)
+target_compile_features(bbox_cpu PUBLIC cxx_std_14)
+target_sources(bbox_cpu PRIVATE 
+bbox_cpu.cpp
+)
