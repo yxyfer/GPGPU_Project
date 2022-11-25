@@ -34,11 +34,11 @@ __global__ void apply_bin_threshold(unsigned char *buffer, size_t rows, size_t c
     buffer[col + row * pitch] = 255 * (buffer[col + row * pitch] >= threshold); 
 }
 
-void threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch) {
-    unsigned char otsu_thresh = otsu_threshold(buffer, rows, cols, pitch);
+void threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int thx, int thy) {
+    unsigned char otsu_thresh = otsu_threshold(buffer, rows, cols, pitch, thx, thy);
     unsigned char otsu_thresh2 = otsu_thresh * 2.5;
 
-    dim3 threads(32,32);
+    dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
 

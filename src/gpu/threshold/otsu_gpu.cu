@@ -88,8 +88,8 @@ T *mallocSimple() {
     return device;
 }
 
-float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold) {
-    dim3 threads(32,32);
+float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold, int thx, int thy) {
+    dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
     
@@ -151,12 +151,12 @@ float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitc
     return(float) h_weight_whitep * h_var_white + (float) h_weight_blackp * h_var_black;
 }
 
-unsigned char otsu_threshold(unsigned char* buffer, size_t rows, size_t cols, size_t pitch) {
+unsigned char otsu_threshold(unsigned char* buffer, size_t rows, size_t cols, size_t pitch, int thx, int thy) {
     unsigned char opti_th = 0;
     float otsu_val = inf;
 
     for (unsigned char i = 0; i < 255; i++) {
-        float otsu = otsu_criteria(buffer, rows, cols, pitch, i);
+        float otsu = otsu_criteria(buffer, rows, cols, pitch, i, thx, thy);
         /* std::cout << i << " | " << otsu << '\n'; */
         if (otsu < otsu_val) {
             otsu_val = otsu;
