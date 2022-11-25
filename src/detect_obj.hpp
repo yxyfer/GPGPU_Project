@@ -3,18 +3,18 @@
 #include <memory>
 
 struct ImageMat {
-    unsigned char **pixel;
+    unsigned char** pixel;
     int height;
     int width;
 };
 
 struct GaussianKernel {
-    double **kernel;
+    double** kernel;
     unsigned char size;
 };
 
 struct MorphologicalKernel {
-    unsigned char **kernel;
+    unsigned char** kernel;
     int size;
 };
 
@@ -26,10 +26,10 @@ struct Bbox {
 };
 
 ///// FILE: struct_utils.cpp
-struct ImageMat *new_matrix(int height, int width);
+struct ImageMat* new_matrix(int height, int width);
 
 ///// FILE: struct_utils.cpp
-void swap_matrix(struct ImageMat *a, struct ImageMat *b);
+void swap_matrix(struct ImageMat* a, struct ImageMat* b);
 
 ///// FILE: struct_utils.cpp
 struct GaussianKernel* create_gaussian_kernel(unsigned char size);
@@ -38,13 +38,13 @@ struct GaussianKernel* create_gaussian_kernel(unsigned char size);
 struct MorphologicalKernel* circular_kernel(int kernel_size);
 
 /// FILE: struct_utils.cpp
-void freeImageMat(struct ImageMat *a);
+void freeImageMat(struct ImageMat* a);
 
 /// FILE: struct_utils.cpp
-void freeGaussianKernel(struct GaussianKernel *kernel);
+void freeGaussianKernel(struct GaussianKernel* kernel);
 
 /// FILE: struct_utils.cpp
-void freeMorphologicalKernel(struct MorphologicalKernel *kernel);
+void freeMorphologicalKernel(struct MorphologicalKernel* kernel);
 
 // FILE: detect_obj_cpu.cpp
 /// \param buffer_ref: The RGBA24 image buffer
@@ -67,12 +67,12 @@ struct Bbox** main_detection_test(unsigned char* buffer_ref,
 /// \param height: Image height
 /// \param channels: Image number of channels
 /// \param nb_objs: Return the number of objects in the images
-struct Bbox ***main_detection(unsigned char **images,
+struct Bbox*** main_detection(unsigned char** images,
                               int length,
                               int width,
                               int height,
                               int channels,
-                              int *nb_objs);
+                              int* nb_objs);
 
 // FILE: detect_obj_cpu.cpp
 /// \param src: The RGBA24 image buffer
@@ -86,23 +86,20 @@ void to_gray_scale(unsigned char* src,
                    int height,
                    int channels);
 
-
 // FILE: detect_obj_cpu.cpp
 /// Store the result in the struct image obj
 /// \param ref: The struct image of the reference
 /// \param obj: The struct image of the object
-void difference(struct ImageMat *ref, struct ImageMat *obj);
-
+void difference(struct ImageMat* ref, struct ImageMat* obj);
 
 // FILE: blur_cpu.cpp
 // Apply gaussian blur to the image
 /// \param image: The struct image
 /// \param temp: A temp struct image
-/// \param kernel: The Gaussian kernel 
+/// \param kernel: The Gaussian kernel
 void apply_blurring(struct ImageMat* image,
                     struct ImageMat* temp,
                     struct GaussianKernel* kernel);
-
 
 // FILE: opening.cpp
 /// \param input: The struct image
@@ -120,17 +117,15 @@ void perform_erosion(struct ImageMat* input,
                      struct ImageMat* temp,
                      struct MorphologicalKernel* kernel);
 
-
 // FILE: threshold_cpu.cpp
 /// \param image: The struct image
 /// \param temp: A temp struct image
-int compute_threshold(struct ImageMat* image, struct ImageMat* temp);
-
+int threshold(struct ImageMat* image, struct ImageMat* temp);
 
 // FILE: bbox.cpp
 /// \param image: The struct image
 /// \param nb_compo: Number of components
-struct Bbox** get_bbox(struct ImageMat *image, int nb_compo);
+struct Bbox** get_bbox(struct ImageMat* image, int nb_compo);
 
 /// \param buffer_ref The RGBA24 image buffer
 /// \param buffer_obj The RGBA24 image buffer
