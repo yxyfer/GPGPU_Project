@@ -42,7 +42,7 @@ target_sources(utilsimage PRIVATE src/helpers_images.cpp)
 
 add_library(detector_cpu)
 target_compile_features(detector_cpu PUBLIC cxx_std_14)
-target_link_libraries(detector_cpu PRIVATE spdlog::spdlog utilsimage blurring_cpu openclose_cpu threshold_cpu bbox_cpu)
+target_link_libraries(detector_cpu PRIVATE spdlog::spdlog utilsimage blurring_cpu openclose_cpu threshold_cpu bbox)
 target_sources(detector_cpu PRIVATE src/cpu/detect_obj_cpu.cpp src/struct_utils.cpp)
 
 ##### GPU
