@@ -1,6 +1,18 @@
 #include "threshold_gpu.hpp"
+
 #include <cassert>
 #include <iostream>
+
+#define cudaCheckError()                                                       \
+    {                                                                          \
+        cudaError_t e = cudaGetLastError();                                    \
+        if (e != cudaSuccess)                                                  \
+        {                                                                      \
+            printf("Cuda failure %s:%d: '%s'\n", __FILE__, __LINE__,           \
+                   cudaGetErrorString(e));                                     \
+            exit(EXIT_FAILURE);                                                \
+        }                                                                      \
+    }
 
 __global__ void apply_first_threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold) {
     int col = blockDim.x * blockIdx.x + threadIdx.x;
@@ -27,9 +39,15 @@ void threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch) {
     unsigned char otsu_thresh2 = otsu_thresh * 2.5;
 
     dim3 threads(32,32);
-    dim3 blocks((cols + threads.x - 1) / threads.x, (rows + threads.y - 1)/ threads.y);
+    dim3 blocks(std::ceil(float(cols) / float(threads.x)),
+                std::ceil(float(rows) / float(threads.y)));
 
     apply_first_threshold<<<blocks, threads>>>(buffer, rows, cols, pitch, otsu_thresh - 10);
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    
     apply_bin_threshold<<<blocks, threads>>>(buffer, rows, cols, pitch, otsu_thresh2);
+    cudaCheckError();
+    cudaDeviceSynchronize();
 }
 

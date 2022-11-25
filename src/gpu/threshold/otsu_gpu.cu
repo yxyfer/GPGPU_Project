@@ -3,6 +3,17 @@
 #include <iostream>
 #include <math.h>
 
+#define cudaCheckError()                                                       \
+    {                                                                          \
+        cudaError_t e = cudaGetLastError();                                    \
+        if (e != cudaSuccess)                                                  \
+        {                                                                      \
+            printf("Cuda failure %s:%d: '%s'\n", __FILE__, __LINE__,           \
+                   cudaGetErrorString(e));                                     \
+            exit(EXIT_FAILURE);                                                \
+        }                                                                      \
+    }
+
 float inf = std::numeric_limits<float>::infinity();
 
 // See slides to improve
@@ -79,18 +90,21 @@ T *mallocSimple() {
 
 float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold) {
     dim3 threads(32,32);
-    dim3 blocks((cols + threads.x - 1) / threads.x, (rows + threads.y - 1)/ threads.y);
+    dim3 blocks(std::ceil(float(cols) / float(threads.x)),
+                std::ceil(float(rows) / float(threads.y)));
     
     unsigned int *d_nb_white_pi = mallocCpy<unsigned int>(0);
     unsigned int *d_nb_black_pi = mallocCpy<unsigned int>(0);
 
     nb_bw_pixels<<<blocks, threads>>>(buffer, rows, cols, pitch, d_nb_white_pi, d_nb_black_pi, threshold);
+    cudaCheckError();
     cudaDeviceSynchronize();
     
     unsigned int *d_sum_white = mallocCpy<unsigned int>(0);
     unsigned int *d_sum_black = mallocCpy<unsigned int>(0);
 
     sum_black_white<<<blocks, threads>>>(buffer, rows, cols, pitch, threshold, d_sum_white, d_sum_black);
+    cudaCheckError();
     cudaDeviceSynchronize();
 
     float *d_mean_white = mallocSimple<float>();
@@ -98,12 +112,14 @@ float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitc
     
     mean<<<1, 1>>>(d_mean_white, d_sum_white, d_nb_white_pi);
     mean<<<1, 1>>>(d_mean_black, d_sum_black, d_nb_black_pi);
+    cudaCheckError();
     cudaDeviceSynchronize();
     
     float *d_var_white = mallocCpy<float>(0);
     float *d_var_black = mallocCpy<float>(0);
 
     almost_var_black_white<<<blocks, threads>>>(buffer, rows, cols, pitch, threshold, d_mean_white, d_mean_black, d_var_white, d_var_black);
+    cudaCheckError();
     cudaDeviceSynchronize();
    
     float h_var_white;
