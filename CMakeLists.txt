@@ -63,11 +63,21 @@ target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage)
 target_sources(detector_gpu PRIVATE src/detect_obj.hpp src/detect_obj_gpu.cu)
 set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+add_library(gpu_test_functions)
+target_compile_features(gpu_test_functions PUBLIC cxx_std_14)
+target_link_libraries(gpu_test_functions PRIVATE utilsimage)
+target_sources(gpu_test_functions PRIVATE src/test_gpu/gpu_functions.hpp src/test_gpu/gpu_functions.cu)
+set_target_properties(gpu_test_functions PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
 
 ##### MAIN
 # add_executable(main src/mandel.cpp)
 # target_compile_features(main PUBLIC cxx_std_17)
 # target_link_libraries(main PRIVATE CLI11::CLI11 spdlog::spdlog detector_cpu detector_gpu utilsimage)
+
+add_executable(main_gpu_test src/test_gpu/main_gpu_test.cpp)
+target_compile_features(main_gpu_test PUBLIC cxx_std_17)
+target_link_libraries(main_gpu_test PRIVATE gpu_test_functions)
 
 add_executable(main_cpu src/main_cpu.cpp)
 target_compile_features(main_cpu PUBLIC cxx_std_17)
