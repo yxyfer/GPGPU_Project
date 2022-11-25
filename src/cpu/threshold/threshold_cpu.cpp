@@ -1,7 +1,6 @@
-
-#include "../detect_obj.hpp"
-#include "../threshold.hpp"
-#include "../utils.hpp"
+#include "detect_obj.hpp"
+#include "threshold.hpp"
+#include "utils.hpp"
 
 void apply_base_threshold(struct ImageMat* image, unsigned char threshold)
 {
