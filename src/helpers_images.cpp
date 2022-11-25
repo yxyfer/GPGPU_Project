@@ -17,7 +17,7 @@ unsigned char **get_images(int argc, char **argv, int *width, int *height, int *
 
     for (int i = 1; i < argc; i++) {
         list_images[i - 1] = load_image(argv[i], width, height, channels);
-        std::cout << "- " <<  argv[i] << " | " << *height << "x" << *width << '\n';
+        /* std::cout << "- " <<  argv[i] << " | " << *height << "x" << *width << '\n'; */
     }
 
     return list_images;

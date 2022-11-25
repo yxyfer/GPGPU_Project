@@ -127,6 +127,7 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 
     cudaCheckError();
     cudaDeviceSynchronize();
+
     to_save(current_obj, rows, cols, file_save_closing_obj, pitch);
 
     // Perform opening
