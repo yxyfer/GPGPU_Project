@@ -80,7 +80,7 @@ target_include_directories(main_gpu PRIVATE "includes")
 target_link_libraries(main_gpu CLI11::CLI11 spdlog::spdlog detector_gpu utilsimage)
 
 ##### BENCH
-add_executable(bench src/bench.cpp)
-target_compile_features(bench PUBLIC cxx_std_17)
-target_include_directories(bench PRIVATE "includes")
-target_link_libraries(bench benchmark::benchmark detector_cpu utilsimage)
+add_executable(bench_cpu src/bench/bench_cpu.cpp)
+target_compile_features(bench_cpu PUBLIC cxx_std_17)
+target_include_directories(bench_cpu PRIVATE "includes")
+target_link_libraries(bench_cpu benchmark::benchmark detector_cpu utilsimage)
