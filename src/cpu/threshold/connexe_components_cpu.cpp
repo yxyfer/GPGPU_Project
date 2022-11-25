@@ -1,7 +1,7 @@
-#include "../threshold.hpp"
+#include "threshold.hpp"
 
-#include "../detect_obj.hpp"
-#include "../utils.hpp"
+#include "detect_obj.hpp"
+#include "utils.hpp"
 
 void components(struct ImageMat* img,
                 struct ImageMat* temp,

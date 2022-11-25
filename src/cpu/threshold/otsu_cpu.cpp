@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <limits>
 
-#include "../detect_obj.hpp"
-#include "../threshold.hpp"
-#include "../utils.hpp"
+#include "detect_obj.hpp"
+#include "threshold.hpp"
+#include "utils.hpp"
 
 float inf = std::numeric_limits<float>::infinity();
 
