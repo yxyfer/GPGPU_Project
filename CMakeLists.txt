@@ -44,7 +44,7 @@ target_sources(openclose_cpu PRIVATE src/detect_obj.hpp src/opening.cpp)
 
 add_library(threshold_cpu)
 target_compile_features(threshold_cpu PUBLIC cxx_std_14)
-target_sources(threshold_cpu PRIVATE src/detect_obj.hpp src/threshold_cpu.cpp)
+target_sources(threshold_cpu PRIVATE src/detect_obj.hpp src/threshold/threshold_cpu.cpp)
 
 add_library(bbox_cpu)
 target_compile_features(bbox_cpu PUBLIC cxx_std_14)
