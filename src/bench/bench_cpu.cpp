@@ -4,13 +4,16 @@
 #include <benchmark/benchmark.h>
 #include <iostream>
 
+std::string ref_image_path = "../images/base.png";
+int width, height, channels;
+
+unsigned char* ref_image = load_image(const_cast<char*>(ref_image_path.c_str()),
+                                      &width,
+                                      &height,
+                                      &channels);
+
 void BM_gray_scale(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    unsigned char* ref_image = load_image(
-        const_cast<char*>(ref_image_path.c_str()), &width, &height, &channels);
     struct ImageMat* image = new_matrix(height, width);
 
     for (auto _ : st) {
@@ -23,11 +26,6 @@ void BM_gray_scale(benchmark::State& st)
 
 void BM_blurring(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    load_image(const_cast<char*>(ref_image_path.c_str()), &width, &height,
-               &channels);
     struct ImageMat* image = new_matrix(height, width);
     struct ImageMat* temp_image = new_matrix(height, width);
 
@@ -42,11 +40,6 @@ void BM_blurring(benchmark::State& st)
 
 void BM_difference(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    load_image(const_cast<char*>(ref_image_path.c_str()), &width, &height,
-               &channels);
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
 
@@ -59,11 +52,6 @@ void BM_difference(benchmark::State& st)
 
 void BM_closing(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    load_image(const_cast<char*>(ref_image_path.c_str()), &width, &height,
-               &channels);
     struct MorphologicalKernel* k1 = circular_kernel(5);
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
@@ -79,11 +67,6 @@ void BM_closing(benchmark::State& st)
 
 void BM_opening(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    load_image(const_cast<char*>(ref_image_path.c_str()), &width, &height,
-               &channels);
     struct MorphologicalKernel* k1 = circular_kernel(11);
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
@@ -99,11 +82,6 @@ void BM_opening(benchmark::State& st)
 
 void BM_threshold(benchmark::State& st)
 {
-    int width, height, channels;
-    std::string ref_image_path = "../images/base.png";
-
-    load_image(const_cast<char*>(ref_image_path.c_str()), &width, &height,
-               &channels);
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
 
