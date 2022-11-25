@@ -1,4 +1,7 @@
 #pragma once
+#include <cassert>
+#include <cmath>
+#include <iostream>
 #include <memory>
 
 struct ImageMat
@@ -94,5 +97,3 @@ unsigned char **compute_threshold(unsigned char **image, int width, int height);
 /// \param width Image width
 /// \param height Image height
 /// \param channels Image number of channels
-void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
-                int height, int channels);

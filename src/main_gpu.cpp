@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 
-#include "detect_obj.hpp"
+#include "detect_obj_gpu.hpp"
 #include "helpers_images.hpp"
 
 // Usage: ./main_cpu

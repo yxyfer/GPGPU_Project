@@ -1,16 +1,15 @@
 #pragma once
 #include <iostream>
 
-
 template <typename T>
-T **create2Dmatrix(size_t rows, size_t cols) {
-    T** matrix = (T**) malloc(rows * sizeof(T*));
-    for(size_t i = 0; i < rows; i++)
-        matrix[i] = (T*) malloc(cols * sizeof(T));
+T **create2Dmatrix(size_t rows, size_t cols)
+{
+    T **matrix = (T **)malloc(rows * sizeof(T *));
+    for (size_t i = 0; i < rows; i++)
+        matrix[i] = (T *)malloc(cols * sizeof(T));
 
     return matrix;
 }
-
 
 template <typename T>
 T **create_array2D(size_t height, size_t width, T value)
@@ -28,15 +27,22 @@ T **create_array2D(size_t height, size_t width, T value)
     return res;
 }
 
-
 template <typename T>
-void free2Dmatrix(size_t rows, T matrix) {
+void free2Dmatrix(size_t rows, T matrix)
+{
     for (size_t i = 0; i < rows; i++)
         free(matrix[i]);
 
     free(matrix);
 }
 
+struct kernelCudaSize
+{
+    unsigned int thread_dim1;
+    unsigned int thread_dim2;
+    unsigned int block_dim1;
+    unsigned int block_dim2;
+};
 
 /*
 Sum the elements of a create_array2D
