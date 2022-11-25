@@ -9,6 +9,8 @@
 #include "helpers_images.hpp"
 #include "opening_gpu.hpp"
 #include "utils_gpu.hpp"
+#include "threshold_gpu.hpp"
+
 
 void to_save(unsigned char *buffer_cuda, int rows, int cols, std::string file,
              size_t pitch)
@@ -37,6 +39,7 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 
     std::string file_save_closing_obj = "../images/closing_cuda.jpg";
     std::string file_save_opening_obj = "../images/opening_cuda.jpg";
+    std::string file_save_threshold_obj = "../images/threshold_cuda.jpg";
 
     const int rows = height;
     const int cols = width;
@@ -143,6 +146,9 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 
     cudaFree(morpho_k1);
     cudaFree(morpho_k2);
+
+    threshold(current_obj, rows, cols, pitch, threadsPerBlock.x, threadsPerBlock.y);
+    to_save(current_obj, rows, cols, file_save_threshold_obj, pitch);
 
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
