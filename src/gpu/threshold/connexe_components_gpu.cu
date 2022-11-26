@@ -18,25 +18,30 @@ __global__ void propagate(unsigned char *buffer_base, unsigned char *buffer_bin,
     int col = blockDim.x * blockIdx.x + threadIdx.x;
     int row = blockDim.y * blockIdx.y + threadIdx.y;
     
-    if (col >= cols || row >= rows || buffer_bin[col + row * pitch] != 255)
+    if (col >= cols || row >= rows || buffer_bin[col + row * pitch] != 1)
          return;
 
-    if (col + 1 < cols && buffer_base[(col + 1) + row * pitch] != 0 && buffer_bin[(col + 1) + row * pitch] != 255) {
-	    buffer_bin[(col + 1) + row * pitch] = 255;
-	    *has_change = true;
+    bool change = false;
+
+    if (col + 1 < cols && buffer_base[(col + 1) + row * pitch] != 0 && buffer_bin[(col + 1) + row * pitch] != 1) {
+	    buffer_bin[(col + 1) + row * pitch] = 1;
+	    change = true;
     }
-    if (col - 1 >= 0 && buffer_base[(col - 1) + row * pitch] != 0 && buffer_bin[(col - 1) + row * pitch] != 255) {
-	    buffer_bin[(col - 1) + row * pitch] = 255;
-	    *has_change = true;
+    if (col - 1 >= 0 && buffer_base[(col - 1) + row * pitch] != 0 && buffer_bin[(col - 1) + row * pitch] != 1) {
+	    buffer_bin[(col - 1) + row * pitch] = 1;
+	    change = true;
     }
-    if (row + 1 < rows && buffer_base[col + (row + 1) * pitch] != 0 && buffer_bin[col + (row + 1) * pitch] != 255) {
-	    buffer_bin[col + (row + 1) * pitch] = 255;
-	    *has_change = true;
+    if (row + 1 < rows && buffer_base[col + (row + 1) * pitch] != 0 && buffer_bin[col + (row + 1) * pitch] != 1) {
+	    buffer_bin[col + (row + 1) * pitch] = 1;
+	    change = true;
     }
-    if (row - 1 >= 0 && buffer_base[col + (row - 1) * pitch] != 0 && buffer_bin[col + (row - 1) * pitch] != 255) {
-	    buffer_bin[col + (row - 1) * pitch] = 255;
-	    *has_change = true;
+    if (row - 1 >= 0 && buffer_base[col + (row - 1) * pitch] != 0 && buffer_bin[col + (row - 1) * pitch] != 1) {
+	    buffer_bin[col + (row - 1) * pitch] = 1;
+	    change = true;
     }
+    
+    if (change)
+        *has_change = true;
 }
 
 __global__ void set_value(bool *has_change, bool val) {
@@ -69,7 +74,8 @@ void connexe_components(unsigned char *buffer_base, unsigned char *buffer_bin,
 
     while (h_has_change) {
 	set_value<<<1, 1>>>(d_has_change, false);
-   	propagate<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, d_has_change);
+        for (int i = 0; i < 3; i++)
+            propagate<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, d_has_change);
 	cudaCheckError();
   	cudaDeviceSynchronize();
 	h_has_change = get_has_change(d_has_change);

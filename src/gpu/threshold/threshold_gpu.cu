@@ -32,7 +32,7 @@ __global__ void apply_bin_threshold(unsigned char *buffer, unsigned char *buffer
         return;
 
     buffer_bin[col + row * pitch] = buffer[col + row * pitch]; 
-    buffer[col + row * pitch] = 255 * (buffer[col + row * pitch] >= threshold); 
+    buffer[col + row * pitch] = 1 * (buffer[col + row * pitch] >= threshold); 
 }
 
 unsigned char* malloc2Dcuda(size_t rows, size_t cols, size_t *pitch) {
