@@ -17,47 +17,36 @@ __global__ void propagate(unsigned char *buffer_base, unsigned char *buffer_bin,
                           size_t rows, size_t cols, size_t pitch, bool *has_change) {
     int col = blockDim.x * blockIdx.x + threadIdx.x;
     int row = blockDim.y * blockIdx.y + threadIdx.y;
+    
+    if (col >= cols || row >= rows || buffer_bin[col + row * pitch] != 255)
+         return;
 
-    if (col >= cols || row >= rows)
-        return;
-
-    /* if (buffer_bin[col + row * pitch] == 0) */
-    /*     return; */
-
-    while (*has_change) {
-        if (col == 0 && row == 0) {
-            printf("HEE\n");
-            *has_change = false;
-        }
-
-        __syncthreads();
-
-        bool my_color = buffer_base[col + row * pitch] % 255 == 0;
-
-        if (!my_color && (col + 1) < cols && (buffer_bin[col + 1 + row * pitch] == 255)) {
-            buffer_bin[col + row * pitch] = 255;
-            *has_change = true;
-            printf("HHEEE\n");
-        }
-        /* if (!my_color && (col - 1) >= 0 && (buffer_bin[col - 1 + row * pitch] == 255)) { */
-        /*     buffer_bin[col + row * pitch] = 255; */
-        /*     *has_change = true; */
-        /* } */
-        /* if (!my_color && (row + 1) < rows && (buffer_bin[col + (row + 1) * pitch] == 255)) { */
-        /*     buffer_bin[col + row * pitch] = 255; */
-        /*     *has_change = true; */
-        /* } */
-        /* if (!my_color && (row - 1) >= 0 && (buffer_bin[col + (row - 1) * pitch] == 255)) { */
-        /*     buffer_bin[col + row * pitch] = 255; */
-        /*     *has_change = true; */
-        /* } */
-
-        __syncthreads();
-
-        if (*has_change == true) {
-            printf("TRUUUUE\n");
-        }
+    if (col + 1 < cols && buffer_base[(col + 1) + row * pitch] != 0 && buffer_bin[(col + 1) + row * pitch] != 255) {
+	    buffer_bin[(col + 1) + row * pitch] = 255;
+	    *has_change = true;
     }
+    if (col - 1 >= 0 && buffer_base[(col - 1) + row * pitch] != 0 && buffer_bin[(col - 1) + row * pitch] != 255) {
+	    buffer_bin[(col - 1) + row * pitch] = 255;
+	    *has_change = true;
+    }
+    if (row + 1 < rows && buffer_base[col + (row + 1) * pitch] != 0 && buffer_bin[col + (row + 1) * pitch] != 255) {
+	    buffer_bin[col + (row + 1) * pitch] = 255;
+	    *has_change = true;
+    }
+    if (row - 1 >= 0 && buffer_base[col + (row - 1) * pitch] != 0 && buffer_bin[col + (row - 1) * pitch] != 255) {
+	    buffer_bin[col + (row - 1) * pitch] = 255;
+	    *has_change = true;
+    }
+}
+
+__global__ void set_value(bool *has_change, bool val) {
+	*has_change = val;
+}
+
+bool get_has_change(bool *d_has_change) {
+	bool h_has_change;
+    	cudaMemcpy(&h_has_change, d_has_change, sizeof(bool), cudaMemcpyDeviceToHost);
+	return h_has_change;
 }
 
 template <class T>
@@ -75,9 +64,14 @@ void connexe_components(unsigned char *buffer_base, unsigned char *buffer_bin,
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
 
-    bool *has_change = mallocCpy<bool>(true);
+    bool *d_has_change = mallocCpy<bool>(false);
+    bool h_has_change = true;
 
-   propagate<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, has_change);
-   cudaCheckError();
-   cudaDeviceSynchronize();
+    while (h_has_change) {
+	set_value<<<1, 1>>>(d_has_change, false);
+   	propagate<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, d_has_change);
+	cudaCheckError();
+  	cudaDeviceSynchronize();
+	h_has_change = get_has_change(d_has_change);
+    }
 }
