@@ -1,4 +1,4 @@
-#include "threshold_gpu.hpp"
+#include "detect_obj_gpu.hpp"
 #include "helpers_gpu.hpp"
 #include <cassert>
 #include <iostream>
@@ -131,7 +131,6 @@ unsigned char otsu_threshold(unsigned char* buffer, size_t rows, size_t cols, si
 
     for (unsigned char i = 0; i < 255; i++) {
         float otsu = otsu_criteria(buffer, rows, cols, pitch, i, thx, thy);
-        /* std::cout << i << " | " << otsu << '\n'; */
         if (otsu < otsu_val) {
             otsu_val = otsu;
             opti_th = i;

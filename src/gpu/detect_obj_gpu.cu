@@ -5,7 +5,6 @@
 #include "detect_obj_gpu.hpp"
 #include "helpers_images.hpp"
 #include "utils_gpu.hpp"
-#include "threshold_gpu.hpp"
 
 unsigned char *cpyToCuda(unsigned char *buffer_ref, size_t size) {
     return cpy_host_to_device<unsigned char>(buffer_ref, size); 

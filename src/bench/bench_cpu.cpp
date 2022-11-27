@@ -12,7 +12,7 @@ unsigned char* ref_image = load_image(const_cast<char*>(ref_image_path.c_str()),
                                       &height,
                                       &channels);
 
-void BM_gray_scale(benchmark::State& st)
+void BM_gray_scale_cpu(benchmark::State& st)
 {
     struct ImageMat* image = new_matrix(height, width);
 
@@ -24,7 +24,7 @@ void BM_gray_scale(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_blurring(benchmark::State& st)
+void BM_blurring_cpu(benchmark::State& st)
 {
     struct ImageMat* image = new_matrix(height, width);
     struct ImageMat* temp_image = new_matrix(height, width);
@@ -38,7 +38,7 @@ void BM_blurring(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_difference(benchmark::State& st)
+void BM_difference_cpu(benchmark::State& st)
 {
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
@@ -50,7 +50,7 @@ void BM_difference(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_closing(benchmark::State& st)
+void BM_closing_cpu(benchmark::State& st)
 {
     struct MorphologicalKernel* k1 = circular_kernel(5);
     struct ImageMat* image1 = new_matrix(height, width);
@@ -65,7 +65,7 @@ void BM_closing(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_opening(benchmark::State& st)
+void BM_opening_cpu(benchmark::State& st)
 {
     struct MorphologicalKernel* k1 = circular_kernel(11);
     struct ImageMat* image1 = new_matrix(height, width);
@@ -80,7 +80,7 @@ void BM_opening(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_threshold(benchmark::State& st)
+void BM_threshold_cpu(benchmark::State& st)
 {
     struct ImageMat* image1 = new_matrix(height, width);
     struct ImageMat* image2 = new_matrix(height, width);
@@ -118,33 +118,18 @@ void BM_main_cpu(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-/* void BM_Rendering_gpu(benchmark::State& st) */
-/* { */
-/*   int stride = width * kRGBASize; */
-/*   std::vector<char> data(height * stride); */
+BENCHMARK(BM_gray_scale_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/*   /1* for (auto _ : st) *1/ */
-/*   /1*   detect_gpu(data.data(), data.data(), width, height, stride); *1/ */
+BENCHMARK(BM_blurring_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/*   st.counters["frame_rate"] = benchmark::Counter(st.iterations(),
- * benchmark::Counter::kIsRate); */
-/* } */
+BENCHMARK(BM_difference_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-BENCHMARK(BM_gray_scale)->Unit(benchmark::kMillisecond)->UseRealTime();
+BENCHMARK(BM_closing_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime();
+BENCHMARK(BM_opening_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime();
-
-BENCHMARK(BM_closing)->Unit(benchmark::kMillisecond)->UseRealTime();
-
-BENCHMARK(BM_opening)->Unit(benchmark::kMillisecond)->UseRealTime();
-
-BENCHMARK(BM_threshold)->Unit(benchmark::kMillisecond)->UseRealTime();
+BENCHMARK(BM_threshold_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_main_cpu)->Unit(benchmark::kMillisecond)->UseRealTime();
-/* BENCHMARK(BM_Rendering_gpu) */
-/* ->Unit(benchmark::kMillisecond) */
-/* ->UseRealTime(); */
 
 BENCHMARK_MAIN();

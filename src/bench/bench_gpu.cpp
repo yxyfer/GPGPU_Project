@@ -1,4 +1,3 @@
-#include "detect_obj.hpp"
 #include "helpers_images.hpp"
 #include "detect_obj_gpu.hpp"
 
@@ -19,7 +18,7 @@ unsigned char* obj_image = load_image(const_cast<char*>(obj_image_path.c_str()),
                                       &height,
                                       &channels);
 
-void BM_gray_scale(benchmark::State& st)
+void BM_gray_scale_gpu(benchmark::State& st)
 {
     size_t pitch;
     const int rows = height;
@@ -37,7 +36,7 @@ void BM_gray_scale(benchmark::State& st)
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_blurring(benchmark::State& st)
+void BM_blurring_gpu(benchmark::State& st)
 {
     size_t pitch;
     const int rows = height;
@@ -52,7 +51,7 @@ void BM_blurring(benchmark::State& st)
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_difference(benchmark::State& st)
+void BM_difference_gpu(benchmark::State& st)
 {
     size_t pitch;
     const int rows = height;
@@ -68,7 +67,7 @@ void BM_difference(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_closing(benchmark::State& st)
+void BM_closing_gpu(benchmark::State& st)
 {
     size_t pitch;
     const int rows = height;
@@ -89,7 +88,7 @@ void BM_closing(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-void BM_opening(benchmark::State& st)
+void BM_opening_gpu(benchmark::State& st)
 {
     size_t pitch;
     const int rows = height;
@@ -110,21 +109,88 @@ void BM_opening(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
-BENCHMARK(BM_gray_scale)->Unit(benchmark::kMillisecond)->UseRealTime();
+void BM_first_threshold_gpu(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    const size_t size_color = cols * rows * channels * sizeof(unsigned char);
+    
+    unsigned char *buffer_ref_cuda = cpyToCuda(ref_image, size_color);
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    
+    gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, 32, 32);
 
-BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime();
+    for (auto _ : st) {
+        threshold(gray_ref_cuda, rows, cols, pitch, 32, 32);
+    }
 
-BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime();
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
 
-BENCHMARK(BM_closing)->Unit(benchmark::kMillisecond)->UseRealTime();
+void BM_connexe_components_gpu(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    const size_t size_color = cols * rows * channels * sizeof(unsigned char);
+    
+    unsigned char *buffer_ref_cuda = cpyToCuda(ref_image, size_color);
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    
+    gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, 32, 32);
 
-BENCHMARK(BM_opening)->Unit(benchmark::kMillisecond)->UseRealTime();
+    unsigned char th = threshold(gray_ref_cuda, rows, cols, pitch, 32, 32);
 
-/* BENCHMARK(BM_threshold)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+    for (auto _ : st) {
+        connexe_components(gray_ref_cuda, rows, cols, pitch, th, 32, 32);
+    }
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
+void BM_threshold_gpu(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    const size_t size_color = cols * rows * channels * sizeof(unsigned char);
+    
+    unsigned char *buffer_ref_cuda = cpyToCuda(ref_image, size_color);
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    
+    gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, 32, 32);
+
+    for (auto _ : st) {
+        unsigned char th = threshold(gray_ref_cuda, rows, cols, pitch, 32, 32);
+        connexe_components(gray_ref_cuda, rows, cols, pitch, th, 32, 32);
+    }
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
+BENCHMARK(BM_gray_scale_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_blurring_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_difference_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_closing_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_opening_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_first_threshold_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_connexe_components_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_threshold_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 /* BENCHMARK(BM_main_cpu)->Unit(benchmark::kMillisecond)->UseRealTime(); */
-/* BENCHMARK(BM_Rendering_gpu) */
-/* ->Unit(benchmark::kMillisecond) */
-/* ->UseRealTime(); */
 
 BENCHMARK_MAIN();
