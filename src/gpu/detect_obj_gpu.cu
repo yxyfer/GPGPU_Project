@@ -150,7 +150,7 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     threshold(current_obj, rows, cols, pitch, threadsPerBlock.x, threadsPerBlock.y);
     to_save(current_obj, rows, cols, file_save_threshold_obj, pitch);
 
-    get_bbox(current_obj, rows, cols, pitch, 1);
+    get_bbox(current_obj, rows, cols, pitch, 2);
 
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
