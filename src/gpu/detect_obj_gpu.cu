@@ -28,21 +28,22 @@ void to_save(unsigned char *buffer_cuda, int rows, int cols, std::string file,
     free(host_buffer);
 }
 
-void object_detection(unsigned char *blur_ref_cuda,
-                      unsigned char *img_obj,
-                      unsigned char *buffer_obj_cuda,
-                      size_t rows,
-                      size_t cols,
-                      size_t pitch,
-                      int channels,
-                      double *gaussian_k,
-                      size_t gaussian_k_size,
-                      unsigned char *morpho_k1,
-                      size_t morpho_k1_size,
-                      unsigned char *morpho_k2,
-                      size_t morpho_k2_size,
-                      int thx,
-                      int thy) {
+struct Bbox **object_detection(unsigned char *blur_ref_cuda,
+                               unsigned char *img_obj,
+                               unsigned char *buffer_obj_cuda,
+                               size_t rows,
+                               size_t cols,
+                               size_t pitch,
+                               int channels,
+                               double *gaussian_k,
+                               size_t gaussian_k_size,
+                               unsigned char *morpho_k1,
+                               size_t morpho_k1_size,
+                               unsigned char *morpho_k2,
+                               size_t morpho_k2_size,
+                               int thx,
+                               int thy,
+                               int* nb_obj) {
 
     const size_t size_color = cols * rows * channels * sizeof(unsigned char);
     unsigned char *img_obj_cuda = cpy_host_to_device<unsigned char>(img_obj, size_color);
@@ -62,17 +63,20 @@ void object_detection(unsigned char *blur_ref_cuda,
     unsigned char otsu_th = threshold(current_obj, rows, cols, pitch, thx, thy);
     int nb_components = connexe_components(current_obj, rows, cols, pitch, otsu_th, thx, thy);
 
-    get_bbox(current_obj, rows, cols, pitch, nb_components);
+    struct Bbox **bboxes = get_bbox(current_obj, rows, cols, pitch, nb_components);
+    *nb_obj = nb_components;
 
     cudaFree(img_obj_cuda);
+
+    return bboxes;
 }
 
-void main_detection_gpu(unsigned char** images,
-                        int length,
-                        int width,
-                        int height,
-                        int channels) {
-    
+struct Bbox ***main_detection_gpu(unsigned char** images,
+                                  int length,
+                                  int width,
+                                  int height,
+                                  int channels,
+                                  int *nb_objs) {
     const int rows = height;
     const int cols = width;
 
@@ -105,11 +109,17 @@ void main_detection_gpu(unsigned char** images,
     size_t k2_size = 11;
     unsigned char *morpho_k1 = circular_kernel_gpu(k1_size);
     unsigned char *morpho_k2 = circular_kernel_gpu(k2_size);
+    
+    struct Bbox*** all_boxes =
+        (struct Bbox***)std::malloc((length - 1) * sizeof(struct BBox**));
+    int nb_obj;
 
     for (int i = 1; i < length; i++) {
-        object_detection(gray_ref_cuda, images[i], gray_obj_cuda, rows, cols, pitch,
-                         channels, kernel_gpu, kernel_size, morpho_k1, k1_size, morpho_k2,
-                         k2_size, threads.x, threads.y);
+        all_boxes[i - 1] = object_detection(gray_ref_cuda, images[i], gray_obj_cuda,
+                                            rows, cols, pitch, channels, kernel_gpu,
+                                            kernel_size, morpho_k1, k1_size, morpho_k2,
+                                            k2_size, threads.x, threads.y, &nb_obj);
+       nb_objs[i - 1] = nb_obj; 
     }
 
     cudaFree(buffer_ref_cuda);
@@ -118,6 +128,8 @@ void main_detection_gpu(unsigned char** images,
     cudaFree(kernel_gpu);
     cudaFree(morpho_k1);
     cudaFree(morpho_k2);
+
+    return all_boxes;
 }
 
 

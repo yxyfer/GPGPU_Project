@@ -19,7 +19,7 @@ __global__ void bbox(unsigned char *buffer, int *maxh, int *minh, int *maxw, int
     }
 }
 
-void get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int nb_components) {
+struct Bbox** get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int nb_components) {
     int max = nb_components;
     int *maxw, *maxh, *minw, *minh, *d_maxw, *d_maxh, *d_minw, *d_minh;
    
@@ -55,7 +55,23 @@ void get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int
     cudaMemcpy(maxh, d_maxh, max * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(minw, d_minw, max * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(minh, d_minh, max * sizeof(int), cudaMemcpyDeviceToHost);
+    
+    struct Bbox** bboxes = (struct Bbox**) std::malloc(nb_components * sizeof(struct Bbox *));
 
-    for (int i = 0; i < max; i++)
-        printf("label %d, maxh: %d, minh: %d, maxw: %d, minw: %d\n", i + 1, maxh[i], minh[i], maxw[i], minw[i]);
+    for (int i = 0; i < max; i++) {
+        struct Bbox* bbox = (struct Bbox*) std::malloc(sizeof(struct Bbox));
+        bbox->x = minw[i];
+        bbox->y = minh[i];
+        bbox->height = maxh[i] - minh[i];
+        bbox->width = maxw[i] - minw[i];
+
+        bboxes[i] = bbox;
+    }
+
+    cudaFree(d_maxh);
+    cudaFree(d_maxw);
+    cudaFree(d_minh);
+    cudaFree(d_minw);
+
+    return bboxes;
 }
