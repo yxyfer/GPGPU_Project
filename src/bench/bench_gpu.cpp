@@ -52,11 +52,27 @@ void BM_blurring(benchmark::State& st)
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_difference(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    unsigned char *gray_obj_cuda = initCuda(rows, cols, &pitch);
+    
+    for (auto _ : st)
+        difference_gpu(gray_ref_cuda, gray_obj_cuda, rows, cols, pitch, 32, 32);
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
 BENCHMARK(BM_gray_scale)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/* BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 /* BENCHMARK(BM_closing)->Unit(benchmark::kMillisecond)->UseRealTime(); */
 

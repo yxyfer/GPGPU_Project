@@ -49,7 +49,7 @@ target_sources(detector_cpu PRIVATE src/cpu/detect_obj_cpu.cpp src/struct_utils.
 
 add_library(detector_gpu)
 target_compile_features(detector_gpu PUBLIC cxx_std_14)
-target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage threshold_gpu bbox_gpu gray_gpu helpers_gpu blurr_gpu)
+target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage threshold_gpu bbox_gpu gray_gpu helpers_gpu blurr_gpu diff_gpu)
 target_sources(detector_gpu PRIVATE src/gpu/detect_obj_gpu.cu)
 set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 

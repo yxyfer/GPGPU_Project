@@ -2,10 +2,7 @@
 #include <cmath>
 #include <iostream>
 
-/* #include "blur_gpu.hpp" */
 #include "detect_obj_gpu.hpp"
-#include "difference_gpu.hpp"
-/* #include "grayscale_gpu.hpp" */
 #include "helpers_images.hpp"
 #include "opening_gpu.hpp"
 #include "utils_gpu.hpp"
@@ -99,11 +96,7 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     to_save(gray_obj_cuda, height, width, file_save_blur_obj, pitch);
 
     // Calculating diff
-    difference<<<blocksPerGrid, threadsPerBlock>>>(gray_ref_cuda, gray_obj_cuda,
-                                                   rows, cols, pitch);
-
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    difference_gpu(gray_ref_cuda, gray_obj_cuda, rows, cols, pitch, threadsPerBlock.x, threadsPerBlock.y);
 
     unsigned char *current_obj = gray_obj_cuda;
     to_save(current_obj, rows, cols, file_save_diff, pitch);

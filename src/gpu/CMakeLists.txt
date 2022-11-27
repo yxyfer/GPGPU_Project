@@ -24,6 +24,12 @@ target_sources(blurr_gpu PRIVATE
     blurr_gpu.cu
 )
 
+add_library(diff_gpu)
+target_compile_features(diff_gpu PUBLIC cxx_std_14)
+target_sources(diff_gpu PRIVATE
+    difference_gpu.cu
+)
+
 add_library(helpers_gpu)
 target_compile_features(helpers_gpu PUBLIC cxx_std_14)
 target_sources(helpers_gpu PRIVATE
