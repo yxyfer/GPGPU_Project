@@ -10,6 +10,8 @@ unsigned char *initCuda(size_t rows, size_t cols, size_t *pitch);
 void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
                 int height, int channels);
 
+void main_detection_gpu(unsigned char **images, int length, int width, int height, int channels);
+
 void gray_scale_gpu(unsigned char *buffer_cuda, unsigned char *gray_cuda,
                     int rows, int cols, int pitch, int channels, int thx, int thy);
 
