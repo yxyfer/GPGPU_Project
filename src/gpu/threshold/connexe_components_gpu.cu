@@ -198,11 +198,43 @@ __global__ void print_labels(unsigned char *buffer, size_t rows, size_t cols) {
     printf("%d ", buffer[col + row * cols]);
 }
 
-void connexe_components(unsigned char *buffer_base, unsigned int *buffer_bin,
-                        size_t rows, size_t cols, size_t pitch, size_t pitch_bin, int thx, int thy) {
+__global__ void apply_bin_threshold2(unsigned int *buffer_bin, unsigned char *buffer_base, size_t rows, size_t cols,
+                                     size_t pitch, size_t pitch_bin, int threshold) {
+    unsigned int col = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned int row = blockDim.y * blockIdx.y + threadIdx.y;
+
+    if (col >= cols || row >= rows)
+        return;
+
+    unsigned int val = col + row * cols + 1;
+    unsigned int *b_bin = (unsigned int *)((char*)buffer_bin + row * pitch_bin + col * sizeof(unsigned int));
+
+    if (buffer_base[col + row * pitch] >= threshold)
+        *b_bin = val;
+    else
+        *b_bin = 0;
+}
+
+template <typename T>
+T* malloc2Dcuda(size_t rows, size_t cols, size_t *pitch) {
+    T *buffer_device;
+    cudaMallocPitch(&buffer_device, pitch, sizeof(T) * cols, rows);
+    return buffer_device;
+}
+
+int connexe_components(unsigned char *buffer_base, size_t rows, size_t cols, size_t pitch, unsigned char threshold, int thx, int thy) {
     dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
+    
+    size_t pitch_bin;
+    unsigned int *buffer_bin = malloc2Dcuda<unsigned int>(rows, cols, &pitch_bin);
+
+    apply_bin_threshold2<<<blocks, threads>>>(buffer_bin, buffer_base, rows, cols, pitch, pitch_bin, threshold);
+    cudaDeviceSynchronize();
+    cudaCheckError();
+
+    /* connexe_components(buffer, buffer_bin, rows, cols, pitch, pitch_bin, thx, thy); */
 
     bool *d_has_change = mallocCpy<bool>(false);
     bool h_has_change = true;
@@ -224,8 +256,6 @@ void connexe_components(unsigned char *buffer_base, unsigned int *buffer_bin,
     cudaDeviceSynchronize();
     cudaCheckError();
     
-    std::cout << "EHEHEHE\n";
-
     mask_label<<<blocks, threads>>>(buffer_bin, labels, rows, cols, pitch_bin);
     cudaDeviceSynchronize();
     cudaCheckError();
@@ -238,11 +268,16 @@ void connexe_components(unsigned char *buffer_base, unsigned int *buffer_bin,
     continous_labels<<<blocks, threads>>>(labels, rows, cols, d_nb_compo);
     cudaDeviceSynchronize();
     cudaCheckError();
+
     relabelled<<<blocks, threads>>>(buffer_base, buffer_bin, labels, rows, cols, pitch, pitch_bin);
     cudaDeviceSynchronize();
     cudaCheckError();
     
     cudaMemcpy(&h_nb_compo, d_nb_compo, sizeof(int), cudaMemcpyDeviceToHost);
 
-    std::cout << "NB: " << h_nb_compo - 1 << '\n';
+    cudaFree(d_nb_compo);
+    cudaFree(labels);
+    cudaFree(buffer_bin);
+
+    return h_nb_compo - 1;
 }

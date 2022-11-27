@@ -35,22 +35,22 @@ __global__ void apply_first_threshold(unsigned char *buffer, size_t rows, size_t
 /*     buffer[col + row * pitch] = 1 * (buffer[col + row * pitch] >= threshold); */ 
 /* } */
 
-__global__ void apply_bin_threshold2(unsigned int *buffer_bin, unsigned char *buffer_base, size_t rows, size_t cols,
-                                     size_t pitch, size_t pitch_bin, int threshold) {
-    unsigned int col = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int row = blockDim.y * blockIdx.y + threadIdx.y;
+/* __global__ void apply_bin_threshold2(unsigned int *buffer_bin, unsigned char *buffer_base, size_t rows, size_t cols, */
+/*                                      size_t pitch, size_t pitch_bin, int threshold) { */
+/*     unsigned int col = blockDim.x * blockIdx.x + threadIdx.x; */
+/*     unsigned int row = blockDim.y * blockIdx.y + threadIdx.y; */
 
-    if (col >= cols || row >= rows)
-        return;
+/*     if (col >= cols || row >= rows) */
+/*         return; */
 
-    unsigned int val = col + row * cols + 1;
-    unsigned int *b_bin = (unsigned int *)((char*)buffer_bin + row * pitch_bin + col * sizeof(unsigned int));
+/*     unsigned int val = col + row * cols + 1; */
+/*     unsigned int *b_bin = (unsigned int *)((char*)buffer_bin + row * pitch_bin + col * sizeof(unsigned int)); */
 
-    if (buffer_base[col + row * pitch] >= threshold)
-        *b_bin = val;
-    else
-        *b_bin = 0;
-}
+/*     if (buffer_base[col + row * pitch] >= threshold) */
+/*         *b_bin = val; */
+/*     else */
+/*         *b_bin = 0; */
+/* } */
 
 template <typename T>
 T* malloc2Dcuda(size_t rows, size_t cols, size_t *pitch) {
@@ -59,10 +59,9 @@ T* malloc2Dcuda(size_t rows, size_t cols, size_t *pitch) {
     return buffer_device;
 }
 
-void threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int thx, int thy) {
-    std::cout << "Start threshold\n";
+unsigned char threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int thx, int thy) {
     unsigned char otsu_thresh = otsu_threshold(buffer, rows, cols, pitch, thx, thy);
-    unsigned char otsu_thresh2 = otsu_thresh * 2.5;
+    /* unsigned char otsu_thresh2 = otsu_thresh * 2.5; */
 
     dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
@@ -72,15 +71,15 @@ void threshold(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, in
     cudaDeviceSynchronize();
     cudaCheckError();
 
-    size_t pitch_bin;
-    unsigned int *buffer_bin = malloc2Dcuda<unsigned int>(rows, cols, &pitch_bin);
+    return otsu_thresh < 102 ? otsu_thresh * 2.5 : 255;
 
-    apply_bin_threshold2<<<blocks, threads>>>(buffer_bin, buffer, rows, cols, pitch, pitch_bin, otsu_thresh2);
-    cudaDeviceSynchronize();
-    cudaCheckError();
+    /* size_t pitch_bin; */
+    /* unsigned int *buffer_bin = malloc2Dcuda<unsigned int>(rows, cols, &pitch_bin); */
 
-    connexe_components(buffer, buffer_bin, rows, cols, pitch, pitch_bin, thx, thy);
-    /* cudaFree(buffer_base); */
-    std::cout << "End threshold\n";
+    /* apply_bin_threshold2<<<blocks, threads>>>(buffer_bin, buffer, rows, cols, pitch, pitch_bin, otsu_thresh2); */
+    /* cudaDeviceSynchronize(); */
+    /* cudaCheckError(); */
+
+    /* connexe_components(buffer, buffer_bin, rows, cols, pitch, pitch_bin, thx, thy); */
 }
 

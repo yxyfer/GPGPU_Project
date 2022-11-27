@@ -147,10 +147,12 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     cudaFree(morpho_k1);
     cudaFree(morpho_k2);
 
-    threshold(current_obj, rows, cols, pitch, threadsPerBlock.x, threadsPerBlock.y);
+    unsigned char otsu_th = threshold(current_obj, rows, cols, pitch, threadsPerBlock.x, threadsPerBlock.y);
     to_save(current_obj, rows, cols, file_save_threshold_obj, pitch);
 
-    get_bbox(current_obj, rows, cols, pitch, 2);
+    int nb_components = connexe_components(current_obj, rows, cols, pitch, otsu_th, threadsPerBlock.x, threadsPerBlock.y);
+
+    get_bbox(current_obj, rows, cols, pitch, nb_components);
 
     cudaFree(buffer_ref_cuda);
     cudaFree(buffer_obj_cuda);
