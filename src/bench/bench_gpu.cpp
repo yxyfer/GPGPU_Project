@@ -175,6 +175,31 @@ void BM_threshold_gpu(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_main_gpu(benchmark::State& st)
+{
+    std::string ref_image_path = "../images/base.png";
+    std::string obj_image_path = "../images/obj.png";
+
+    int width, height, channels;
+    unsigned char* ref_image = load_image(
+        const_cast<char*>(ref_image_path.c_str()), &width, &height, &channels);
+    unsigned char* obj_image = load_image(
+        const_cast<char*>(obj_image_path.c_str()), &width, &height, &channels);
+
+    unsigned char** images =
+        (unsigned char**)std::malloc(sizeof(unsigned char*) * 2);
+    images[0] = ref_image;
+    images[1] = obj_image;
+
+    int* nb_objs = (int*)std::malloc(1 * sizeof(int));
+
+    for (auto _ : st)
+        main_detection_gpu(images, 2, width, height, channels, nb_objs);
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
 BENCHMARK(BM_gray_scale_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_blurring_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
@@ -191,6 +216,6 @@ BENCHMARK(BM_connexe_components_gpu)->Unit(benchmark::kMillisecond)->UseRealTime
 
 BENCHMARK(BM_threshold_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/* BENCHMARK(BM_main_cpu)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+BENCHMARK(BM_main_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK_MAIN();
