@@ -11,3 +11,5 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
                              unsigned char *gray_obj_cuda, int rows, int cols,
                              int kernel_size, kernelCudaSize cuda_kernel_size,
                              int pitch);*/
+
+void get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int nb_components);
