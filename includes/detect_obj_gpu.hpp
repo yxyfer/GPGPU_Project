@@ -15,6 +15,11 @@ void gray_scale_gpu(unsigned char *buffer_cuda, unsigned char *gray_cuda,
 
 void gray_scale_test(unsigned char *buffer, int width, int height, int channels);
 
+double *create_gaussian_kernel_gpu(unsigned char size);
+
+void apply_blurr_gpu(unsigned char *buffer, size_t rows, size_t cols, unsigned int kernel_size,
+        double *kernel_gpu, size_t pitch, int thx, int thy);
+
 
 void get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int nb_components);
 

@@ -37,10 +37,24 @@ void BM_gray_scale(benchmark::State& st)
     st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_blurring(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    double *kernel_gpu = create_gaussian_kernel_gpu(5);
+
+    for (auto _ : st)
+        apply_blurr_gpu(gray_ref_cuda, rows, cols, 5, kernel_gpu, pitch, 32, 32);
+
+    st.counters["frame_rate"] = benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
 
 BENCHMARK(BM_gray_scale)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/* BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 /* BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime(); */
 

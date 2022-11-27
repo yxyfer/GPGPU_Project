@@ -2,10 +2,10 @@
 #include <cmath>
 #include <iostream>
 
-#include "blur_gpu.hpp"
+/* #include "blur_gpu.hpp" */
 #include "detect_obj_gpu.hpp"
 #include "difference_gpu.hpp"
-#include "grayscale_gpu.hpp"
+/* #include "grayscale_gpu.hpp" */
 #include "helpers_images.hpp"
 #include "opening_gpu.hpp"
 #include "utils_gpu.hpp"
@@ -82,17 +82,6 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, threadsPerBlock.x, threadsPerBlock.y);
     gray_scale_gpu(buffer_obj_cuda, gray_obj_cuda, rows, cols, pitch, channels, threadsPerBlock.x, threadsPerBlock.y);
 
-    // Apply gray scale
-    /* to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>( */
-    /*     buffer_ref_cuda, gray_ref_cuda, rows, cols, channels, pitch); */
-    /* cudaCheckError(); */
-    /* cudaDeviceSynchronize(); */
-
-    /* to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>( */
-    /*     buffer_obj_cuda, gray_obj_cuda, rows, cols, channels, pitch); */
-    /* cudaCheckError(); */
-    /* cudaDeviceSynchronize(); */
-
     // Uncomment to see the images
     to_save(gray_ref_cuda, rows, cols, file_save_gray_ref, pitch);
     to_save(gray_obj_cuda, height, width, file_save_gray_obj, pitch);
@@ -101,15 +90,8 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     unsigned int kernel_size = 5;
     double *kernel_gpu = create_gaussian_kernel_gpu(kernel_size);
 
-    gaussian_blur_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        gray_ref_cuda, rows, cols, kernel_size, kernel_gpu, pitch);
-    cudaCheckError();
-    cudaDeviceSynchronize();
-
-    gaussian_blur_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        gray_obj_cuda, rows, cols, kernel_size, kernel_gpu, pitch);
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    apply_blurr_gpu(gray_ref_cuda, rows, cols, kernel_size, kernel_gpu, pitch, threadsPerBlock.x, threadsPerBlock.y);
+    apply_blurr_gpu(gray_obj_cuda, rows, cols, kernel_size, kernel_gpu, pitch, threadsPerBlock.x, threadsPerBlock.y);
 
     cudaFree(kernel_gpu);
 
