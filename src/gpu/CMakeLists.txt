@@ -12,8 +12,14 @@ target_sources(bbox_gpu PRIVATE
     bbox_gpu.cu
 )
 
-# add_library(helpers_gpu)
-# target_compile_features(helpers_gpu PUBLIC cxx_std_14)
-# target_sources(helpers_gpu PRIVATE
-#     helpers_gpu.cu
-# )
+add_library(gray_gpu)
+target_compile_features(gray_gpu PUBLIC cxx_std_14)
+target_sources(gray_gpu PRIVATE
+    gray_scale_gpu.cu
+)
+
+add_library(helpers_gpu)
+target_compile_features(helpers_gpu PUBLIC cxx_std_14)
+target_sources(helpers_gpu PRIVATE
+    helpers_gpu.cu
+)

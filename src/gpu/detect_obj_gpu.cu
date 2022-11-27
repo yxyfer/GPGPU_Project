@@ -11,6 +11,13 @@
 #include "utils_gpu.hpp"
 #include "threshold_gpu.hpp"
 
+unsigned char *cpyToCuda(unsigned char *buffer_ref, size_t size) {
+    return cpy_host_to_device<unsigned char>(buffer_ref, size); 
+}
+
+unsigned char *initCuda(size_t rows, size_t cols, size_t *pitch) {
+    return malloc_cuda2D(cols, rows, pitch);
+}
 
 void to_save(unsigned char *buffer_cuda, int rows, int cols, std::string file,
              size_t pitch)
@@ -72,16 +79,19 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
 
     std::cout << "Pitch: " << pitch << '\n';
 
-    // Apply gray scale
-    to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>(
-        buffer_ref_cuda, gray_ref_cuda, rows, cols, channels, pitch);
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, threadsPerBlock.x, threadsPerBlock.y);
+    gray_scale_gpu(buffer_obj_cuda, gray_obj_cuda, rows, cols, pitch, channels, threadsPerBlock.x, threadsPerBlock.y);
 
-    to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>(
-        buffer_obj_cuda, gray_obj_cuda, rows, cols, channels, pitch);
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    // Apply gray scale
+    /* to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>( */
+    /*     buffer_ref_cuda, gray_ref_cuda, rows, cols, channels, pitch); */
+    /* cudaCheckError(); */
+    /* cudaDeviceSynchronize(); */
+
+    /* to_gray_scale<<<blocksPerGrid, threadsPerBlock>>>( */
+    /*     buffer_obj_cuda, gray_obj_cuda, rows, cols, channels, pitch); */
+    /* cudaCheckError(); */
+    /* cudaDeviceSynchronize(); */
 
     // Uncomment to see the images
     to_save(gray_ref_cuda, rows, cols, file_save_gray_ref, pitch);

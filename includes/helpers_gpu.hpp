@@ -12,6 +12,8 @@
         }                                                                      \
     }
 
+int getProperties(int device, cudaDeviceProp *deviceProp);
+
 template <typename T>
 T* malloc2Dcuda(size_t rows, size_t cols, size_t *pitch) {
     T *buffer_device;
@@ -44,3 +46,13 @@ T *malloc1Dcuda(size_t size) {
     return device;
 }
 
+template <typename T>
+T *cpyHostToDevice(T *buffer, size_t size)
+{
+    T *device_buffer = malloc1Dcuda<T>(size);
+
+    cudaMemcpy(device_buffer, buffer, size, cudaMemcpyHostToDevice);
+    cudaCheckError();
+
+    return device_buffer;
+}
