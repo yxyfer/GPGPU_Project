@@ -1,18 +1,9 @@
 #include "threshold_gpu.hpp"
+#include "helpers_gpu.hpp"
 #include <cassert>
 #include <iostream>
 #include <math.h>
 
-#define cudaCheckError()                                                       \
-    {                                                                          \
-        cudaError_t e = cudaGetLastError();                                    \
-        if (e != cudaSuccess)                                                  \
-        {                                                                      \
-            printf("Cuda failure %s:%d: '%s'\n", __FILE__, __LINE__,           \
-                   cudaGetErrorString(e));                                     \
-            exit(EXIT_FAILURE);                                                \
-        }                                                                      \
-    }
 
 float inf = std::numeric_limits<float>::infinity();
 
@@ -71,52 +62,35 @@ __global__ void mean(float* dst, unsigned int* sum, unsigned int *size) {
     *dst = (float) *sum / (float) *size;
 }
 
-template <class T>
-T *mallocCpy(T value) {
-    T *device;
-    cudaMalloc((void**) &device, sizeof(T));
-    cudaMemcpy(device, &value, sizeof(T), cudaMemcpyHostToDevice);
-
-    return device;
-}
-
-template <class T>
-T *mallocSimple() {
-    T *device;
-    cudaMalloc((void**) &device, sizeof(T));
-
-    return device;
-}
-
 float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold, int thx, int thy) {
     dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
     
-    unsigned int *d_nb_white_pi = mallocCpy<unsigned int>(0);
-    unsigned int *d_nb_black_pi = mallocCpy<unsigned int>(0);
+    unsigned int *d_nb_white_pi = mallocCpy<unsigned int>(0, sizeof(unsigned int));
+    unsigned int *d_nb_black_pi = mallocCpy<unsigned int>(0, sizeof(unsigned int));
 
     nb_bw_pixels<<<blocks, threads>>>(buffer, rows, cols, pitch, d_nb_white_pi, d_nb_black_pi, threshold);
     cudaCheckError();
     cudaDeviceSynchronize();
     
-    unsigned int *d_sum_white = mallocCpy<unsigned int>(0);
-    unsigned int *d_sum_black = mallocCpy<unsigned int>(0);
+    unsigned int *d_sum_white = mallocCpy<unsigned int>(0, sizeof(unsigned int));
+    unsigned int *d_sum_black = mallocCpy<unsigned int>(0, sizeof(unsigned int));
 
     sum_black_white<<<blocks, threads>>>(buffer, rows, cols, pitch, threshold, d_sum_white, d_sum_black);
     cudaCheckError();
     cudaDeviceSynchronize();
 
-    float *d_mean_white = mallocSimple<float>();
-    float *d_mean_black = mallocSimple<float>();
+    float *d_mean_white = malloc1Dcuda<float>(sizeof(float));
+    float *d_mean_black = malloc1Dcuda<float>(sizeof(float));
     
     mean<<<1, 1>>>(d_mean_white, d_sum_white, d_nb_white_pi);
     mean<<<1, 1>>>(d_mean_black, d_sum_black, d_nb_black_pi);
     cudaCheckError();
     cudaDeviceSynchronize();
     
-    float *d_var_white = mallocCpy<float>(0);
-    float *d_var_black = mallocCpy<float>(0);
+    float *d_var_white = mallocCpy<float>(0, sizeof(float));
+    float *d_var_black = mallocCpy<float>(0, sizeof(float));
 
     almost_var_black_white<<<blocks, threads>>>(buffer, rows, cols, pitch, threshold, d_mean_white, d_mean_black, d_var_white, d_var_black);
     cudaCheckError();
