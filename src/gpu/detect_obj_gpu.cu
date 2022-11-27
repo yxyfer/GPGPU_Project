@@ -4,7 +4,6 @@
 
 #include "detect_obj_gpu.hpp"
 #include "helpers_images.hpp"
-#include "opening_gpu.hpp"
 #include "utils_gpu.hpp"
 #include "threshold_gpu.hpp"
 
@@ -108,24 +107,14 @@ void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
     unsigned char *morpho_k2 = circular_kernel_gpu(k2_size);
 
     // Perform closing
-    perform_erosion_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        current_obj, rows, cols, k1_size, morpho_k1, pitch);
-    perform_dilation_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        current_obj, rows, cols, k1_size, morpho_k1, pitch);
-
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    erosion_gpu(current_obj, rows, cols, k1_size, morpho_k1, pitch, threadsPerBlock.x, threadsPerBlock.y);
+    dilation_gpu(current_obj, rows, cols, k1_size, morpho_k1, pitch, threadsPerBlock.x, threadsPerBlock.y);
 
     to_save(current_obj, rows, cols, file_save_closing_obj, pitch);
 
     // Perform opening
-    perform_dilation_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        current_obj, rows, cols, k2_size, morpho_k2, pitch);
-    perform_erosion_gpu<<<blocksPerGrid, threadsPerBlock>>>(
-        current_obj, rows, cols, k2_size, morpho_k2, pitch);
-
-    cudaCheckError();
-    cudaDeviceSynchronize();
+    dilation_gpu(current_obj, rows, cols, k2_size, morpho_k2, pitch, threadsPerBlock.x, threadsPerBlock.y);
+    erosion_gpu(current_obj, rows, cols, k2_size, morpho_k2, pitch, threadsPerBlock.x, threadsPerBlock.y);
 
     to_save(current_obj, rows, cols, file_save_opening_obj, pitch);
 

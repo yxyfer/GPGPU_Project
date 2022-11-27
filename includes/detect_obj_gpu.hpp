@@ -23,5 +23,13 @@ void apply_blurr_gpu(unsigned char *buffer, size_t rows, size_t cols, unsigned i
 void difference_gpu(unsigned char *ref, unsigned char *obj, size_t rows,
                     size_t cols, size_t pitch, int thx, int thy);
 
+unsigned char *circular_kernel_gpu(int kernel_size);
+
+void erosion_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
+                 unsigned char *kernel, size_t pitch, int thx, int thy);
+
+void dilation_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
+                 unsigned char *kernel, size_t pitch, int thx, int thy);
+
 void get_bbox(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int nb_components);
 

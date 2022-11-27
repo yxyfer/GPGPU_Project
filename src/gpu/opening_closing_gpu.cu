@@ -1,11 +1,10 @@
-#pragma once
-
 #include <cmath>
 #include <cstdio>
-#include <iostream>
 #include <numeric>
 
-#include "utils_gpu.hpp"
+
+#include "detect_obj_gpu.hpp"
+#include "helpers_gpu.hpp"
 
 unsigned char *circular_kernel_gpu(int kernel_size)
 {
@@ -24,7 +23,7 @@ unsigned char *circular_kernel_gpu(int kernel_size)
     }
     size_t kernel_gpu_size = kernel_size * kernel_size * sizeof(unsigned char);
     unsigned char *kernel_gpu =
-        cpy_host_to_device<unsigned char>(kernel, kernel_gpu_size);
+        cpyHostToDevice<unsigned char>(kernel, kernel_gpu_size);
     return kernel_gpu;
 }
 
@@ -94,6 +93,27 @@ __global__ void perform_erosion_gpu(unsigned char *image, int rows, int cols,
     __syncthreads();
 
     image[y * pitch + x] = res;
+}
+
+
+void erosion_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
+                 unsigned char *kernel, size_t pitch, int thx, int thy) {
+    const dim3 threads(thx, thy);
+    const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
+    
+    perform_erosion_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, kernel, pitch);
+    cudaCheckError();
+    cudaDeviceSynchronize();
+}
+
+void dilation_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
+                 unsigned char *kernel, size_t pitch, int thx, int thy) {
+    const dim3 threads(thx, thy);
+    const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
+    
+    perform_dilation_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, kernel, pitch);
+    cudaCheckError();
+    cudaDeviceSynchronize();
 }
 
 /*

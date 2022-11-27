@@ -30,6 +30,12 @@ target_sources(diff_gpu PRIVATE
     difference_gpu.cu
 )
 
+add_library(openclose_gpu)
+target_compile_features(openclose_gpu PUBLIC cxx_std_14)
+target_sources(openclose_gpu PRIVATE
+    opening_closing_gpu.cu
+)
+
 add_library(helpers_gpu)
 target_compile_features(helpers_gpu PUBLIC cxx_std_14)
 target_sources(helpers_gpu PRIVATE

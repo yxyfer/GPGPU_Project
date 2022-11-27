@@ -15,7 +15,7 @@ __global__ void difference(unsigned char *buffer_ref, unsigned char *buffer_obj,
 }
 
 void difference_gpu(unsigned char *ref, unsigned char *obj, size_t rows, size_t cols, size_t pitch, int thx, int thy) {
-    const dim3 threads(32, 32);
+    const dim3 threads(thx, thy);
     const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
     
     difference<<<blocks, threads>>>(ref, obj, rows, cols, pitch);

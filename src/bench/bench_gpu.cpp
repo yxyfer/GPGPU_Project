@@ -68,15 +68,57 @@ void BM_difference(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_closing(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    unsigned char *obj = initCuda(rows, cols, &pitch);
+    
+    size_t k1_size = 5;
+    unsigned char *morpho_k1 = circular_kernel_gpu(k1_size);
+
+    // Perform closing
+    for (auto _ : st) {
+        erosion_gpu(obj, rows, cols, k1_size, morpho_k1, pitch, 32, 32);
+        dilation_gpu(obj, rows, cols, k1_size, morpho_k1, pitch, 32, 32);
+    }
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
+void BM_opening(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    unsigned char *obj = initCuda(rows, cols, &pitch);
+    
+    size_t k2_size = 11;
+    unsigned char *morpho_k2 = circular_kernel_gpu(k2_size);
+
+    // Perform closing
+    for (auto _ : st) {
+        dilation_gpu(obj, rows, cols, k2_size, morpho_k2, pitch, 32, 32);
+        erosion_gpu(obj, rows, cols, k2_size, morpho_k2, pitch, 32, 32);
+    }
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
 BENCHMARK(BM_gray_scale)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_blurring)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_difference)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/* BENCHMARK(BM_closing)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+BENCHMARK(BM_closing)->Unit(benchmark::kMillisecond)->UseRealTime();
 
-/* BENCHMARK(BM_opening)->Unit(benchmark::kMillisecond)->UseRealTime(); */
+BENCHMARK(BM_opening)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 /* BENCHMARK(BM_threshold)->Unit(benchmark::kMillisecond)->UseRealTime(); */
 
