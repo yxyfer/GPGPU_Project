@@ -142,11 +142,13 @@ void BM_connexe_components_gpu(benchmark::State& st)
     unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
     
     gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, 32, 32);
-
     unsigned char th = threshold(gray_ref_cuda, rows, cols, pitch, 32, 32);
+    
+    unsigned char *new_cuda = initCuda(rows, cols, &pitch);
 
     for (auto _ : st) {
-        connexe_components(gray_ref_cuda, rows, cols, pitch, th, 32, 32);
+        cpyCudaToCuda(gray_ref_cuda, new_cuda, rows, cols, pitch);
+        connexe_components(new_cuda, rows, cols, pitch, th, 32, 32);
     }
 
     st.counters["frame_rate"] =
@@ -200,6 +202,29 @@ void BM_main_gpu(benchmark::State& st)
         benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
 }
 
+void BM_bbox_gpu(benchmark::State& st)
+{
+    size_t pitch;
+    const int rows = height;
+    const int cols = width;
+    
+    const size_t size_color = cols * rows * channels * sizeof(unsigned char);
+    
+    unsigned char *buffer_ref_cuda = cpyToCuda(ref_image, size_color);
+    unsigned char *gray_ref_cuda = initCuda(rows, cols, &pitch);
+    
+    gray_scale_gpu(buffer_ref_cuda, gray_ref_cuda, rows, cols, pitch, channels, 32, 32);
+    unsigned char th = threshold(gray_ref_cuda, rows, cols, pitch, 32, 32);
+    int nb = connexe_components(gray_ref_cuda, rows, cols, pitch, th, 32, 32);
+
+    for (auto _ : st) {
+        get_bbox(gray_ref_cuda, rows, cols, pitch, nb);
+    }
+
+    st.counters["frame_rate"] =
+        benchmark::Counter(st.iterations(), benchmark::Counter::kIsRate);
+}
+
 BENCHMARK(BM_gray_scale_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_blurring_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
@@ -215,6 +240,8 @@ BENCHMARK(BM_first_threshold_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 BENCHMARK(BM_connexe_components_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_threshold_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
+
+BENCHMARK(BM_bbox_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 
 BENCHMARK(BM_main_gpu)->Unit(benchmark::kMillisecond)->UseRealTime();
 

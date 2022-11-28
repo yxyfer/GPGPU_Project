@@ -82,7 +82,7 @@ __global__ void final_work(unsigned int *nb_white, unsigned int *nb_black,
         *result = weight_whitep * var_white + weight_blackp * var_black;
 }
 
-float otsu_criteria2(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold, int thx, int thy) {
+float otsu_criteria(unsigned char *buffer, size_t rows, size_t cols, size_t pitch, int threshold, int thx, int thy) {
     dim3 threads(thx, thy);
     dim3 blocks(std::ceil(float(cols) / float(threads.x)),
                 std::ceil(float(rows) / float(threads.y)));
@@ -123,7 +123,7 @@ unsigned char otsu_threshold(unsigned char* buffer, size_t rows, size_t cols, si
     float otsu_val = inf;
 
     for (unsigned char i = 10; i < 103; i++) {
-        float otsu = otsu_criteria2(buffer, rows, cols, pitch, i, thx, thy);
+        float otsu = otsu_criteria(buffer, rows, cols, pitch, i, thx, thy);
         if (otsu < otsu_val) {
             otsu_val = otsu;
             opti_th = i;
