@@ -1,7 +1,5 @@
-#pragma once
-#include <iostream>
-
-#include "utils_gpu.hpp"
+#include "detect_obj_gpu.hpp"
+#include "helpers_gpu.hpp"
 
 double *create_gaussian_kernel_gpu(unsigned char size)
 {
@@ -30,8 +28,7 @@ double *create_gaussian_kernel_gpu(unsigned char size)
             kernel[i * size + j] /= sum;
 
     size_t size_kernel_gpu = size * size * sizeof(double);
-    double *kernel_gpu = cpy_host_to_device<double>(kernel, size_kernel_gpu);
-    return kernel_gpu;
+    return cpyHostToDevice<double>(kernel, size_kernel_gpu);
 }
 
 __global__ void gaussian_blur_gpu(unsigned char *image, int rows, int cols,
@@ -63,4 +60,14 @@ __global__ void gaussian_blur_gpu(unsigned char *image, int rows, int cols,
     __syncthreads();
 
     image[y * pitch + x] = res;
+}
+
+void apply_blurr_gpu(unsigned char *buffer, size_t rows, size_t cols, unsigned int kernel_size,
+        double *kernel_gpu, size_t pitch, int thx, int thy) {
+    const dim3 threads(thx, thy);
+    const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
+
+    gaussian_blur_gpu<<<blocks, threads>>>(buffer, rows, cols, kernel_size, kernel_gpu, pitch);
+    cudaCheckError();
+    cudaDeviceSynchronize();
 }

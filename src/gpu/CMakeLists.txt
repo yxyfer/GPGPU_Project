@@ -12,8 +12,32 @@ target_sources(bbox_gpu PRIVATE
     bbox_gpu.cu
 )
 
-# add_library(helpers_gpu)
-# target_compile_features(helpers_gpu PUBLIC cxx_std_14)
-# target_sources(helpers_gpu PRIVATE
-#     helpers_gpu.cu
-# )
+add_library(gray_gpu)
+target_compile_features(gray_gpu PUBLIC cxx_std_14)
+target_sources(gray_gpu PRIVATE
+    gray_scale_gpu.cu
+)
+
+add_library(blurr_gpu)
+target_compile_features(blurr_gpu PUBLIC cxx_std_14)
+target_sources(blurr_gpu PRIVATE
+    blurr_gpu.cu
+)
+
+add_library(diff_gpu)
+target_compile_features(diff_gpu PUBLIC cxx_std_14)
+target_sources(diff_gpu PRIVATE
+    difference_gpu.cu
+)
+
+add_library(openclose_gpu)
+target_compile_features(openclose_gpu PUBLIC cxx_std_14)
+target_sources(openclose_gpu PRIVATE
+    opening_closing_gpu.cu
+)
+
+add_library(helpers_gpu)
+target_compile_features(helpers_gpu PUBLIC cxx_std_14)
+target_sources(helpers_gpu PRIVATE
+    helpers_gpu.cu
+)

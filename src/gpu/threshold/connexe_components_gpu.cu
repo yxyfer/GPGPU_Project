@@ -1,4 +1,4 @@
-#include "threshold_gpu.hpp"
+#include "detect_obj_gpu.hpp"
 #include <cassert>
 #include <iostream>
 #include "helpers_gpu.hpp"

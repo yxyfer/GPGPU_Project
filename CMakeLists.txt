@@ -49,7 +49,8 @@ target_sources(detector_cpu PRIVATE src/cpu/detect_obj_cpu.cpp src/struct_utils.
 
 add_library(detector_gpu)
 target_compile_features(detector_gpu PUBLIC cxx_std_14)
-target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage threshold_gpu bbox_gpu)
+target_link_libraries(detector_gpu PRIVATE spdlog::spdlog utilsimage threshold_gpu bbox_gpu
+    gray_gpu helpers_gpu blurr_gpu diff_gpu openclose_gpu)
 target_sources(detector_gpu PRIVATE src/gpu/detect_obj_gpu.cu)
 set_target_properties(detector_gpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -84,3 +85,8 @@ add_executable(bench_cpu src/bench/bench_cpu.cpp)
 target_compile_features(bench_cpu PUBLIC cxx_std_17)
 target_include_directories(bench_cpu PRIVATE "includes")
 target_link_libraries(bench_cpu benchmark::benchmark detector_cpu utilsimage)
+
+add_executable(bench_gpu src/bench/bench_gpu.cpp)
+target_compile_features(bench_gpu PUBLIC cxx_std_17)
+target_include_directories(bench_gpu PRIVATE "includes")
+target_link_libraries(bench_gpu benchmark::benchmark detector_gpu utilsimage)
