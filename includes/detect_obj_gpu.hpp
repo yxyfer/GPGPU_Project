@@ -14,6 +14,7 @@ struct Bbox
 
 unsigned char *cpyToCuda(unsigned char *buffer_ref, size_t size);
 unsigned char *initCuda(size_t rows, size_t cols, size_t *pitch);
+void cpyCudaToCuda(unsigned char *src, unsigned char *dst, size_t rows, size_t cols, size_t pitch);
 
 void detect_gpu(unsigned char *buffer_ref, unsigned char *buffer_obj, int width,
                 int height, int channels);

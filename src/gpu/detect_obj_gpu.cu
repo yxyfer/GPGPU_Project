@@ -6,6 +6,10 @@
 #include "helpers_images.hpp"
 #include "utils_gpu.hpp"
 
+void cpyCudaToCuda(unsigned char *src, unsigned char *dst, size_t rows, size_t cols, size_t pitch) {
+    cudaMemcpy2D (dst, pitch, src, pitch, cols * sizeof(unsigned char), rows, cudaMemcpyDeviceToDevice);
+}
+
 unsigned char *cpyToCuda(unsigned char *buffer_ref, size_t size) {
     return cpy_host_to_device<unsigned char>(buffer_ref, size); 
 }

@@ -134,11 +134,11 @@ int connexe_components(unsigned char *buffer_base, size_t rows, size_t cols, siz
 
     while (h_has_change) {
 	set_value<<<1, 1>>>(d_has_change, false);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             propagate2<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, pitch_bin, d_has_change);
-            cudaDeviceSynchronize();
-            cudaCheckError();
         }
+        cudaDeviceSynchronize();
+        cudaCheckError();
 	h_has_change = get_has_change(d_has_change);
     }
 
