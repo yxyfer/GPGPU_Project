@@ -7,12 +7,15 @@ cpu_test:
 gpu_test:
 	cd build && make main_gpu -j && ./main_gpu ../images/base.png ../images/obj.png
 
+gpu_run:
+	cd build && make main_gpu -j && cd .. && ./run_image.sh $(path)
+
 bench_cpu:
 	cd build && make bench_cpu -j && ./bench_cpu
-
 
 bench_gpu:
 	cd build && make bench_gpu -j && ./bench_gpu
 
 clean:
 	rm -rf build/ 
+
