@@ -3,17 +3,6 @@
 #include <iostream>
 #include "helpers_gpu.hpp"
 
-__device__ unsigned int calculate(unsigned int *buffer_bin, int col, int row, size_t rows, size_t cols, size_t pitch, unsigned int current) {
-    if (col >= cols || col < 0 || row >= rows || row < 0)
-        return current;
-
-    unsigned int val = *eltPtr<unsigned int>(buffer_bin, col, row, pitch);
-    if (val == 0)
-        return current;
-
-    return current == 0 ? val : min(current, val);
-}
-
 __global__ void propagate2(unsigned char *buffer_base, unsigned int *buffer_bin,
                           size_t rows, size_t cols, size_t pitch, size_t pitch_bin,
                           bool *has_change, int loop) {
