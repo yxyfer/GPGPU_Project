@@ -15,7 +15,8 @@ __device__ unsigned int calculate(unsigned int *buffer_bin, int col, int row, si
 }
 
 __global__ void propagate2(unsigned char *buffer_base, unsigned int *buffer_bin,
-                          size_t rows, size_t cols, size_t pitch, size_t pitch_bin, bool *has_change) {
+                          size_t rows, size_t cols, size_t pitch, size_t pitch_bin,
+                          bool *has_change, int loop) {
     __shared__ unsigned int tile[33][33];
 
     int col = blockDim.x * blockIdx.x + threadIdx.x;
@@ -24,125 +25,38 @@ __global__ void propagate2(unsigned char *buffer_base, unsigned int *buffer_bin,
     int thx = threadIdx.x;
     int thy = threadIdx.y;
 
-    /* printf("%d %d\n", thx, thy); */
-
-    if (col < cols && row < rows) {
-        unsigned int val = *eltPtr<unsigned int>(buffer_bin, col, row, pitch_bin);
-        tile[thx][thy] = val;
-
-        /* if (thy == 2 && row - 1 >= 0) */
-        /*     tile[thx][1] = *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin); */ 
-        /* if (thy == 34 && row + 1 < rows) */
-        /*     tile[thx][35] = *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin); */ 
-        /* if (thx == 2 && col - 1 >= 0) */
-        /*     tile[1][thy] = *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin); */ 
-        /* if (thx == 34 && col + 1 < cols) */
-        /*     tile[35][thy] = *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin); */ 
-
-        /* if (thx == 2 && thy == 2) { */
-        /*     /1* printf("HEHE\n"); *1/ */
-        /*     if (row - 1 >= 0) { */
-        /*         for (int i = 0; i < 32; i++) */
-        /*             tile[thx + i][1] = *eltPtr<unsigned int>(buffer_bin, col + i, row - 1, pitch_bin); */ 
-        /*     } */   
-        /*     if (row + 32 < rows) { */
-        /*         for (int i = 0; i < 32; i++) */
-        /*             tile[thx + i][34] = *eltPtr<unsigned int>(buffer_bin, col + i, row + 32, pitch_bin); */ 
-        /*     } */
-            
-        /*     if (col + 32 <= cols) { */
-        /*         for (int i = 0; i < 32; i++) */
-        /*             tile[34][thy + i] = *eltPtr<unsigned int>(buffer_bin, col + 32, row + i, pitch_bin); */ 
-        /*     } */
-        /*     if (col - 1 >= 0) { */
-        /*         for (int i = 0; i < 32; i++) */
-        /*             tile[1][thy + i] = *eltPtr<unsigned int>(buffer_bin, col - 1, row + i, pitch_bin); */ 
-        /*     } */
-        /* } */
-
-        /* unsigned int u = col + row * cols + 1; */
-        /* if (thy == 2 && col != 0) */
-        /*     tile[thx - 1][thy] = u; */
-        /*     /1* tile[thx - 1][thy] = *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin); *1/ */
-        
-        /* if (thy == 34 && col < cols) */
-        /*     tile[thx + 1][thy] = u; */
-        /*     /1* tile[thx + 1][thy] = *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin); *1/ */
-        
-        /* if (thx == 2 && row != 0) */
-        /*     tile[thx][thy - 1] = u; */
-        /*     /1* tile[thx][thy - 1] = *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin); *1/ */
-        
-        /* if (thx == 34 && row < rows) */
-        /*     tile[thx][thy + 1] = u; */
-        /*     /1* tile[thx][thy + 1] = *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin); *1/ */
-    }
+    if (col < cols && row < rows)
+        tile[thx][thy] = *eltPtr<unsigned int>(buffer_bin, col, row, pitch_bin);
     
     __syncthreads();
 
     bool change = false;
 
     if (col < cols && row < rows && *eltPtr<unsigned char>(buffer_base, col, row, pitch) != 0) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < loop; i++) {
             unsigned int current = tile[thx][thy];
 
-            /* if (col + 1 < cols && tile[thx + 1][thy] != 0) */
-            /* { */
-            /*     unsigned int val = tile[thx + 1][thy]; */ 
-            /*     current = current == 0 ? val : min(current, val); */
-            /* } */
             if (col + 1 < cols)
             {
-                unsigned int val;
-                if (thx == 31)
-                    val = *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin);
-                else
-                    val = tile[thx + 1][thy];
+                unsigned int val = thx == 31 ? *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin) : tile[thx + 1][thy];
                 if (val != 0)
                     current = current == 0 ? val : min(current, val);
             }
-            /* if (row + 1 < rows && tile[thx][thy + 1] != 0) */
-            /* { */
-            /*     unsigned int val = tile[thx][thy + 1]; */
-            /*     current = current == 0 ? val : min(current, val); */
-            /* } */
             if (row + 1 < rows)
             {
-                unsigned int val;
-                if (thy == 31)
-                    val = *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin);
-                else
-                    val = tile[thx][thy + 1];
+                unsigned int val = thy == 31 ? *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin) : tile[thx][thy + 1];
                 if (val != 0)
                     current = current == 0 ? val : min(current, val);
             }
-            /* if (col - 1 < cols && tile[thx - 1][thy] != 0) */
-            /* { */
-            /*     unsigned int val = tile[thx - 1][thy]; */
-            /*     current = current == 0 ? val : min(current, val); */
-            /* } */
             if (col - 1 >= 0)
             {
-                unsigned int val;
-                if (thx == 0)
-                    val = *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin);
-                else
-                    val = tile[thx - 1][thy];
+                unsigned int val = thx == 0 ? *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin) : tile[thx - 1][thy];
                 if (val != 0)
                     current = current == 0 ? val : min(current, val);
             }
-            /* if (row - 1 < rows && tile[thx][thy - 1] != 0) */
-            /* { */
-            /*     unsigned int val = tile[thx][thy - 1]; */
-            /*     current = current == 0 ? val : min(current, val); */
-            /* } */
             if (row - 1 >= 0)
             {
-                unsigned int val;
-                if (thy == 0)
-                    val = *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin);
-                else
-                    val = tile[thx][thy - 1];
+                unsigned int val = thy == 0 ? *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin) : tile[thx][thy - 1];
                 if (val != 0)
                     current = current == 0 ? val : min(current, val);
             }
@@ -152,107 +66,13 @@ __global__ void propagate2(unsigned char *buffer_base, unsigned int *buffer_bin,
                 change = true;
             }
 
-            /* tile[thx][thy] = current; */
             __syncthreads();
         }
     }
-
     
     if (col < cols && row < rows && change) {
         *has_change = true;
         *eltPtr<unsigned int>(buffer_bin, col, row, pitch_bin) = tile[thx][thy]; 
-    }
-   
-    ////////
-
-    /* int col = blockDim.x * blockIdx.x + threadIdx.x; */
-    /* int row = blockDim.y * blockIdx.y + threadIdx.y; */
-
-    /* if (col >= cols || row >= rows || *eltPtr<unsigned char>(buffer_base, col, row, pitch) == 0) */
-    /*     return; */
-
-    /* unsigned int* b_init = eltPtr<unsigned int>(buffer_bin, col, row, pitch_bin); */
-    /* unsigned int current = *b_init; */
-
-    /* current = calculate(buffer_bin, col + 1, row, rows, cols, pitch_bin, current); */
-    /* current = calculate(buffer_bin, col - 1, row, rows, cols, pitch_bin, current); */
-    /* current = calculate(buffer_bin, col, row + 1, rows, cols, pitch_bin, current); */
-    /* current = calculate(buffer_bin, col, row - 1, rows, cols, pitch_bin, current); */
-
-    /* if (col + 1 < cols && *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin) != 0) */
-    /* { */
-    /*     unsigned int val = *eltPtr<unsigned int>(buffer_bin, col + 1, row, pitch_bin); */
-    /*     current = current == 0 ? val : min(current, val); */
-    /* } */
-    /* if (row + 1 < rows && *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin) != 0) */
-    /* { */
-    /*     unsigned int val = *eltPtr<unsigned int>(buffer_bin, col, row + 1, pitch_bin); */
-    /*     current = current == 0 ? val : min(current, val); */
-    /* } */
-    /* if (col - 1 < cols && *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin) != 0) */
-    /* { */
-    /*     unsigned int val = *eltPtr<unsigned int>(buffer_bin, col - 1, row, pitch_bin); */
-    /*     current = current == 0 ? val : min(current, val); */
-    /* } */
-    /* if (row - 1 < rows && *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin) != 0) */
-    /* { */
-    /*     unsigned int val = *eltPtr<unsigned int>(buffer_bin, col, row - 1, pitch_bin); */
-    /*     current = current == 0 ? val : min(current, val); */
-    /* } */
-
-    /* if (*b_init != current) */
-    /* { */
-    /*     *has_change = true; */
-    /*     *b_init = current; */
-    /* } */
-}
-
-__global__ void propagate(unsigned char *buffer_base, unsigned int *buffer_bin,
-                          size_t rows, size_t cols, size_t pitch, size_t pitch_bin, bool *has_change) {
-    int x = blockDim.x * blockIdx.x + threadIdx.x;
-    int y = blockDim.y * blockIdx.y + threadIdx.y;
-    
-    __shared__ unsigned int tile[36][36];
-
-    int thx = threadIdx.x + 2;
-    int thy = threadIdx.y + 2;
-
-    if (thx == 2) {
-        unsigned int val = *eltPtr<unsigned int>(buffer_bin, x, y, pitch_bin);
-        tile[thx][thy] = val;
-    }
-
-    __syncthreads();
-
-    if (x >= cols || y >= rows || *eltPtr<unsigned char>(buffer_base, x, y, pitch) == 0)
-        return;
-
-    unsigned int* b_init = eltPtr<unsigned int>(buffer_bin, x, y, pitch_bin);
-    unsigned int current = *b_init;
-
-    for (int i = -1; i <= 1; i++)
-    {
-        for (int j = -1; j <= 1; j++)
-        {
-            if ((y + j) >= 0 && (y + j) < rows && (x + i) >= 0 && (x + i) < cols)
-            {
-                unsigned int val; 
-                if ((thy - 2 + j) > 32 || (thy - 2 + j) < 0 || (thx - 2 + i) > 32 || (thx - 2 + i) < 0)
-                    val = *eltPtr<unsigned int>(buffer_bin, x + i, y + j, pitch_bin);
-                else
-                    val = tile[thx + i][thy + j];
-
-                if (val == 0)
-                    continue;
-                current = current == 0 ? val : min(current, val);
-            }
-        }
-    }
-
-    if (*b_init != current)
-    {
-        *has_change = true;
-        *b_init = current;
     }
 }
 
@@ -343,15 +163,17 @@ int connexe_components(unsigned char *buffer_base, size_t rows, size_t cols, siz
     bool *d_has_change = mallocCpy<bool>(false, sizeof(bool));
     bool h_has_change = true;
 
+    int loop = 40;
+
     while (h_has_change) {
 	set_value<<<1, 1>>>(d_has_change, false);
-        for (int i = 0; i < 2; i++) {
-            propagate2<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, pitch_bin, d_has_change);
-        }
-        cudaDeviceSynchronize();
-        cudaCheckError();
+        propagate2<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, pitch_bin, d_has_change, 20);
+        loop = max(5, loop - 5);
 	h_has_change = get_has_change(d_has_change);
     }
+    
+    cudaDeviceSynchronize();
+    cudaCheckError();
 
     int h_nb_compo = 1;
     int *d_nb_compo = mallocCpy<int>(1, sizeof(int));
