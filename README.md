@@ -111,5 +111,6 @@ src
 
 # Different Outputs of the Program:
 
-
 ![Alt Text](https://github.com/othmamo/GPGPU_Project/blob/main/images/output_gifs/fast_detection.gif)
+![Alt Text](https://github.com/othmamo/GPGPU_Project/blob/main/images/output_gifs/cat.gif)
+
