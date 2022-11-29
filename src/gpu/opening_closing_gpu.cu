@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <numeric>
 
-
 #include "detect_obj_gpu.hpp"
 #include "helpers_gpu.hpp"
 
@@ -28,8 +27,7 @@ unsigned char *circular_kernel_gpu(int kernel_size)
 }
 
 __global__ void perform_dilation_gpu(unsigned char *image, int rows, int cols,
-                                     size_t kernel_size, unsigned char *kernel,
-                                     int pitch)
+                                     size_t kernel_size, int pitch)
 {
     int x = blockDim.x * blockIdx.x + threadIdx.x;
     int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -48,8 +46,7 @@ __global__ void perform_dilation_gpu(unsigned char *image, int rows, int cols,
             if ((y + j) >= 0 && (y + j) < rows && (x + i) >= 0
                 && (x + i) < cols)
             {
-                int mult = image[(y + j) * pitch + (x + i)]
-                    * kernel[(j + start_k) * kernel_size + (i + start_k)];
+                int mult = image[(y + j) * pitch + (x + i)];
                 if (mult > res)
                     res = mult;
             }
@@ -62,8 +59,7 @@ __global__ void perform_dilation_gpu(unsigned char *image, int rows, int cols,
 }
 
 __global__ void perform_erosion_gpu(unsigned char *image, int rows, int cols,
-                                    size_t kernel_size, unsigned char *kernel,
-                                    int pitch)
+                                    size_t kernel_size, int pitch)
 {
     int x = blockDim.x * blockIdx.x + threadIdx.x;
     int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -82,8 +78,7 @@ __global__ void perform_erosion_gpu(unsigned char *image, int rows, int cols,
             if ((y + j) >= 0 && (y + j) < rows && (x + i) >= 0
                 && (x + i) < cols)
             {
-                int mult = image[(y + j) * pitch + (x + i)]
-                    * kernel[(j + start_k) * kernel_size + (i + start_k)];
+                int mult = image[(y + j) * pitch + (x + i)];
                 if (mult != 0 && (res == 0 || mult < res))
                     res = mult;
             }
@@ -95,23 +90,26 @@ __global__ void perform_erosion_gpu(unsigned char *image, int rows, int cols,
     image[y * pitch + x] = res;
 }
 
-
 void erosion_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
-                 unsigned char *kernel, size_t pitch, int thx, int thy) {
+                 unsigned char *kernel, size_t pitch, int thx, int thy)
+{
     const dim3 threads(thx, thy);
-    const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
-    
-    perform_erosion_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, kernel, pitch);
+    const dim3 blocks(std::ceil(float(cols) / float(threads.x)),
+                      std::ceil(float(rows) / float(threads.y)));
+
+    perform_erosion_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, pitch);
     cudaCheckError();
     cudaDeviceSynchronize();
 }
 
 void dilation_gpu(unsigned char *obj, size_t rows, size_t cols, size_t k_size,
-                 unsigned char *kernel, size_t pitch, int thx, int thy) {
+                  unsigned char *kernel, size_t pitch, int thx, int thy)
+{
     const dim3 threads(thx, thy);
-    const dim3 blocks(std::ceil(float(cols) / float(threads.x)), std::ceil(float(rows) / float(threads.y)));
-    
-    perform_dilation_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, kernel, pitch);
+    const dim3 blocks(std::ceil(float(cols) / float(threads.x)),
+                      std::ceil(float(rows) / float(threads.y)));
+
+    perform_dilation_gpu<<<blocks, threads>>>(obj, rows, cols, k_size, pitch);
     cudaCheckError();
     cudaDeviceSynchronize();
 }
