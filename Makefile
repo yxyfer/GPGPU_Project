@@ -10,5 +10,9 @@ gpu_test:
 bench_cpu:
 	cd build && make bench_cpu -j && ./bench_cpu
 
+
+bench_gpu:
+	cd build && make bench_gpu -j && ./bench_gpu
+
 clean:
 	rm -rf build/ 
