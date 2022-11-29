@@ -163,12 +163,9 @@ int connexe_components(unsigned char *buffer_base, size_t rows, size_t cols, siz
     bool *d_has_change = mallocCpy<bool>(false, sizeof(bool));
     bool h_has_change = true;
 
-    int loop = 40;
-
     while (h_has_change) {
 	set_value<<<1, 1>>>(d_has_change, false);
-        propagate2<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, pitch_bin, d_has_change, 20);
-        loop = max(5, loop - 5);
+        propagate2<<<blocks, threads>>>(buffer_base, buffer_bin, rows, cols, pitch, pitch_bin, d_has_change, 18);
 	h_has_change = get_has_change(d_has_change);
     }
     
